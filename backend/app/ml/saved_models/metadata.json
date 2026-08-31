@@ -1,0 +1,41 @@
+{
+    "version": "v1",
+    "training_date": "2026-08-29T21:57:05.679814",
+    "models": {
+        "yield_prediction": {
+            "algorithm": "RandomForestRegressor",
+            "features": [
+                "crop_type",
+                "season",
+                "area"
+            ],
+            "r2_score": 0.993,
+            "records": 1000
+        },
+        "profit_prediction": {
+            "algorithm": "RandomForestRegressor",
+            "features": [
+                "crop_type",
+                "season",
+                "area"
+            ],
+            "r2_score": 0.893,
+            "records": 1000
+        },
+        "anomaly_detection": {
+            "algorithm": "IsolationForest",
+            "features": [
+                "category",
+                "farm_area",
+                "amount"
+            ],
+            "contamination": 0.05,
+            "records": 2000
+        },
+        "nlp_categorization": {
+            "algorithm": "TF-IDF + LogisticRegression",
+            "accuracy": 1.0,
+            "records": 600
+        }
+    }
+}
