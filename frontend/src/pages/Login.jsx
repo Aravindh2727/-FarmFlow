@@ -2,14 +2,37 @@ import { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Leaf, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
+import { signInWithGoogle } from '../firebase';
+
+const GoogleIcon = () => (
+  <svg className="w-5 h-5" viewBox="0 0 24 24">
+    <path
+      fill="#4285F4"
+      d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
+    />
+    <path
+      fill="#34A853"
+      d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"
+    />
+    <path
+      fill="#FBBC05"
+      d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+    />
+    <path
+      fill="#EA4335"
+      d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+    />
+  </svg>
+);
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   
-  const { login } = useContext(AuthContext);
+  const { login, loginWithGoogle } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -32,6 +55,27 @@ const Login = () => {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setGoogleLoading(true);
+    try {
+      const googleUser = await signInWithGoogle();
+      await loginWithGoogle(googleUser);
+      navigate('/dashboard');
+    } catch (err) {
+      console.error("Google sign in failed:", err);
+      if (err.code === 'auth/popup-closed-by-user') {
+        setError('Google sign-in popup was closed.');
+      } else if (err.code === 'auth/cancelled-popup-request') {
+        // Ignored
+      } else {
+        setError(err.message || 'Google sign-in failed. Please try again.');
+      }
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-950 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
@@ -42,7 +86,7 @@ const Login = () => {
           Welcome to FarmFlow
         </h2>
         <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-          Sign in to your farm management account
+          Smart Agricultural & Farm Management Platform
         </p>
       </div>
 
@@ -54,6 +98,32 @@ const Login = () => {
               <span>{error}</span>
             </div>
           )}
+
+          {/* Google Sign In Button */}
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={googleLoading || loading}
+            className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700/60 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-semibold transition-all shadow-xs hover:shadow-sm cursor-pointer disabled:opacity-50"
+          >
+            {googleLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin text-emerald-600" />
+            ) : (
+              <GoogleIcon />
+            )}
+            <span>{googleLoading ? 'Signing in with Google...' : 'Continue with Google'}</span>
+          </button>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200 dark:border-gray-700" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white dark:bg-gray-800 px-3 text-gray-400 font-medium tracking-wider">
+                Or sign in with email
+              </span>
+            </div>
+          </div>
 
           {/* Email / Password Form */}
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -95,7 +165,7 @@ const Login = () => {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || googleLoading}
               className="w-full mt-2 flex justify-center items-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 shadow-md shadow-emerald-600/20 transition-all disabled:opacity-50 cursor-pointer"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
