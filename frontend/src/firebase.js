@@ -1,41 +1,39 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || ""
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBGemwiwPUSmCY7PJTkPCqFffqjnXYes6s",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "farmflow-cc670.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "farmflow-cc670",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "farmflow-cc670.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "320774020488",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:320774020488:web:61702982e0fb7af00f2e3d",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-NSRBRG23ZF"
 };
 
-let app = null;
-let auth = null;
-let googleProvider = null;
+// Initialize Firebase App
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-try {
-  if (firebaseConfig.apiKey) {
-    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-    auth = getAuth(app);
-    googleProvider = new GoogleAuthProvider();
-    googleProvider.setCustomParameters({ prompt: 'select_account' });
-  }
-} catch (err) {
-  console.warn("Firebase initialization skipped or failed:", err);
+// Initialize Auth & Google Provider
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+// Initialize Analytics if supported
+let analytics = null;
+if (typeof window !== "undefined") {
+  isSupported().then(yes => {
+    if (yes) {
+      analytics = getAnalytics(app);
+    }
+  }).catch(() => {});
 }
 
 export const signInWithGoogle = async () => {
-  if (!auth || !googleProvider) {
-    // If Firebase config is not provided in env, provide helpful guidance
-    throw new Error(
-      "Firebase is not configured yet. Please add VITE_FIREBASE_API_KEY and VITE_FIREBASE_AUTH_DOMAIN in frontend/.env"
-    );
-  }
   const result = await signInWithPopup(auth, googleProvider);
   return result.user;
 };
 
-export { app, auth, googleProvider };
+export { app, auth, googleProvider, analytics };
 export default app;
