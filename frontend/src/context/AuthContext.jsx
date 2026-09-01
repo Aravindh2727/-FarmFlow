@@ -71,13 +71,13 @@ export const AuthProvider = ({ children }) => {
     return userRes.data;
   };
 
-  const loginWithGoogle = async (googleUser, isSignUp = false) => {
+  const loginWithGoogle = async (googleUser) => {
     const res = await api.post('/auth/google', {
       email: googleUser.email,
       name: googleUser.displayName || (googleUser.email ? googleUser.email.split('@')[0] : 'Farmer'),
       google_id: googleUser.uid,
       photo_url: googleUser.photoURL || null,
-      mode: isSignUp ? 'signup' : 'login'
+      mode: 'login'
     });
 
     const data = res.data;
@@ -94,6 +94,17 @@ export const AuthProvider = ({ children }) => {
     return userRes.data;
   };
 
+  const registerWithGoogle = async (googleUser) => {
+    const res = await api.post('/auth/google', {
+      email: googleUser.email,
+      name: googleUser.displayName || (googleUser.email ? googleUser.email.split('@')[0] : 'Farmer'),
+      google_id: googleUser.uid,
+      photo_url: googleUser.photoURL || null,
+      mode: 'signup'
+    });
+    return res.data;
+  };
+
   const register = async (userData) => {
     const res = await api.post('/auth/register', userData);
     return res.data;
@@ -108,7 +119,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated, isLoading, login, register, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated, isLoading, login, register, loginWithGoogle, registerWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );

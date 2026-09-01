@@ -36,7 +36,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   
-  const { register, loginWithGoogle } = useContext(AuthContext);
+  const { register, registerWithGoogle } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -68,7 +68,9 @@ const Register = () => {
         password: formData.password,
         role: 'farmer'
       });
-      navigate('/login');
+      navigate('/login', {
+        state: { message: 'Account created successfully! Please sign in with your credentials.' }
+      });
     } catch (err) {
       setError(err.response?.data?.detail || 'An error occurred during registration.');
     } finally {
@@ -81,8 +83,10 @@ const Register = () => {
     setGoogleLoading(true);
     try {
       const googleUser = await signInWithGoogle();
-      await loginWithGoogle(googleUser, true);
-      navigate('/dashboard');
+      await registerWithGoogle(googleUser);
+      navigate('/login', {
+        state: { message: 'Google account registered successfully! Please sign in to continue.' }
+      });
     } catch (err) {
       console.error("Google sign up failed:", err);
       if (err.code === 'auth/popup-closed-by-user') {
@@ -134,7 +138,7 @@ const Register = () => {
             ) : (
               <GoogleIcon />
             )}
-            <span>{googleLoading ? 'Signing up with Google...' : 'Sign up with Google'}</span>
+            <span>{googleLoading ? 'Creating account with Google...' : 'Sign up with Google'}</span>
           </button>
 
           <div className="relative my-6">
