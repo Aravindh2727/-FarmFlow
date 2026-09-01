@@ -56,14 +56,31 @@ async def google_auth(google_in: GoogleAuthRequest):
         user = await database.db.users.find_one({"email": google_in.email})
         now = datetime.now(timezone.utc)
         
-        # If user is logging in but no account exists, do not auto-register
-        if google_in.mode == "login" and not user:
-            raise HTTPException(
-                status_code=404,
-                detail="No account found with this Google email. Please create an account first."
-            )
-        
-        if not user:
+        # Mode: LOGIN - strictly for existing accounts
+        if google_in.mode == "login":
+            if not user:
+                raise HTTPException(
+                    status_code=404,
+                    detail="No account found with this Google email. Please create an account first."
+                )
+            # Update user google fields if needed
+            update_fields = {"updated_at": now}
+            if google_in.name and not user.get("name"):
+                update_fields["name"] = google_in.name
+            if google_in.google_id:
+                update_fields["google_id"] = google_in.google_id
+            if google_in.photo_url:
+                update_fields["photo_url"] = google_in.photo_url
+            await database.db.users.update_one({"_id": user["_id"]}, {"$set": update_fields})
+            user = await database.db.users.find_one({"_id": user["_id"]})
+            
+        # Mode: SIGNUP - strictly for creating new accounts
+        elif google_in.mode == "signup":
+            if user:
+                raise HTTPException(
+                    status_code=400,
+                    detail="An account with this Google email already exists. Please sign in instead."
+                )
             user_name = google_in.name if google_in.name else google_in.email.split("@")[0]
             user_doc = {
                 "email": google_in.email,
@@ -78,15 +95,7 @@ async def google_auth(google_in: GoogleAuthRequest):
             result = await database.db.users.insert_one(user_doc)
             user = await database.db.users.find_one({"_id": result.inserted_id})
         else:
-            update_fields = {"updated_at": now}
-            if google_in.name and not user.get("name"):
-                update_fields["name"] = google_in.name
-            if google_in.google_id:
-                update_fields["google_id"] = google_in.google_id
-            if google_in.photo_url:
-                update_fields["photo_url"] = google_in.photo_url
-            await database.db.users.update_one({"_id": user["_id"]}, {"$set": update_fields})
-            user = await database.db.users.find_one({"_id": user["_id"]})
+            raise HTTPException(status_code=400, detail="Invalid authentication mode")
 
         expire_minutes = int(settings.ACCESS_TOKEN_EXPIRE_MINUTES or 1440)
         access_token_expires = timedelta(minutes=expire_minutes)
