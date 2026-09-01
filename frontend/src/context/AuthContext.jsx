@@ -71,9 +71,31 @@ export const AuthProvider = ({ children }) => {
     return userRes.data;
   };
 
+  const loginWithGoogle = async (googleUser) => {
+    const res = await api.post('/auth/google', {
+      email: googleUser.email,
+      name: googleUser.displayName || (googleUser.email ? googleUser.email.split('@')[0] : 'Farmer'),
+      google_id: googleUser.uid,
+      photo_url: googleUser.photoURL || null
+    });
+
+    const data = res.data;
+    setToken(data.access_token);
+    localStorage.setItem('token', data.access_token);
+
+    const userRes = await api.get('/auth/me', {
+      headers: { Authorization: `Bearer ${data.access_token}` }
+    });
+
+    setUser(userRes.data);
+    setIsAuthenticated(true);
+    localStorage.setItem('user', JSON.stringify(userRes.data));
+    return userRes.data;
+  };
+
   const register = async (userData) => {
     const res = await api.post('/auth/register', userData);
-    return res.data; // Optionally log them in directly
+    return res.data;
   };
 
   const logout = () => {
@@ -85,7 +107,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated, isLoading, login, register, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );

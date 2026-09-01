@@ -32,7 +32,9 @@ def get_utc_now():
 
 class UserInDB(UserBase):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    hashed_password: str
+    hashed_password: Optional[str] = None
+    google_id: Optional[str] = None
+    photo_url: Optional[str] = None
     created_at: datetime = Field(default_factory=get_utc_now)
     updated_at: datetime = Field(default_factory=get_utc_now)
 
@@ -43,6 +45,8 @@ class UserInDB(UserBase):
 
 class UserResponse(UserBase):
     id: PyObjectId = Field(alias="_id")
+    google_id: Optional[str] = None
+    photo_url: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -50,6 +54,12 @@ class UserResponse(UserBase):
         populate_by_name = True
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
+
+class GoogleAuthRequest(BaseModel):
+    email: EmailStr
+    name: Optional[str] = ""
+    google_id: Optional[str] = None
+    photo_url: Optional[str] = None
 
 class Token(BaseModel):
     access_token: str
