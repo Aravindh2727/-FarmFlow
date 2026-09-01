@@ -59,8 +59,30 @@ app.include_router(ai_router, prefix="/api/ai", tags=["ai"])
 app.include_router(notifications_router)
 app.include_router(reports_router)
 
+from fastapi import Request
+from fastapi.responses import JSONResponse
+import traceback
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Global error on {request.method} {request.url}: {exc}")
+    logger.error(traceback.format_exc())
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Server Error: {str(exc)}"}
+    )
+
 @app.get("/api/health")
 async def health_check():
     from app.core import database
-    db_status = "connected" if database.db is not None else "disconnected"
+    try:
+        # Quick ping
+        await database.db.command("ping")
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"disconnected: {str(e)}"
     return {"status": "ok", "database": db_status}
