@@ -61,7 +61,7 @@ async def google_auth(google_in: GoogleAuthRequest):
             if not user:
                 raise HTTPException(
                     status_code=404,
-                    detail="No account found with this Google email. Please create an account first."
+                    detail="Account not found. Please create an account first."
                 )
             # Update user google fields if needed
             update_fields = {"updated_at": now}

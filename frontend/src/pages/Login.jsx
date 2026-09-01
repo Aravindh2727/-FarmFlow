@@ -106,7 +106,17 @@ const Login = () => {
           {error && (
             <div className="mb-6 rounded-2xl bg-rose-50 dark:bg-rose-950/40 p-4 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 flex items-start gap-3 text-sm">
               <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-600 mt-0.5" />
-              <span>{error}</span>
+              <div className="flex-1">
+                <span>{error}</span>
+                {error.toLowerCase().includes('account') && (
+                  <Link
+                    to="/register"
+                    className="block mt-1 font-semibold underline text-rose-700 dark:text-rose-300 hover:text-rose-900"
+                  >
+                    Click here to create an account &rarr;
+                  </Link>
+                )}
+              </div>
             </div>
           )}
 
