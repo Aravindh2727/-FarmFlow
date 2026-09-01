@@ -73,15 +73,10 @@ npm run dev
 ```
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### 3. Demo Data Seeding
-To populate realistic demo data (farms, fields, crops, expenses, income, livestock, notifications):
-```bash
-cd backend
-python scripts/seed_demo.py
-```
-**Demo Login Credentials:**
-- **Email:** `demo@farmflow.com`
-- **Password:** `demo123`
+### 3. Getting Started
+1. Open [http://localhost:5173](http://localhost:5173) in your browser.
+2. Click **Create an account** on the login page to register your own account.
+3. Start managing your farms, crops, livestock, activities, and finances!
 
 ---
 

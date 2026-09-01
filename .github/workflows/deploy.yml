@@ -1,0 +1,19 @@
+name: Trigger Render Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Trigger Render Deploy Hooks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Frontend Static Site
+        run: |
+          curl -X POST "${{ secrets.RENDER_STATIC_DEPLOY_HOOK || 'https://api.render.com/deploy/srv-dab8h6jtqb8s73f4ukk0?key=tfWG70TiUNg' }}"
+
+      - name: Deploy Backend Web Service
+        run: |
+          curl -X POST "${{ secrets.RENDER_BACKEND_DEPLOY_HOOK || 'https://api.render.com/deploy/srv-dab84ak9v7es73cbb0o0?key=6EAWPg5lOp0' }}"

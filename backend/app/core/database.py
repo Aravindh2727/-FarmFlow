@@ -7,11 +7,15 @@ db = None
 async def connect_to_mongo():
     global client, db
     client = AsyncIOMotorClient(settings.MONGODB_URL)
-    db = client.get_default_database()
-    print("Connected to MongoDB")
+    try:
+        db = client.get_default_database(default=settings.DATABASE_NAME)
+    except Exception:
+        db = client[settings.DATABASE_NAME]
+    print(f"Connected to MongoDB database: {db.name}")
 
 async def close_mongo_connection():
     global client
     if client:
         client.close()
         print("Closed MongoDB connection")
+
