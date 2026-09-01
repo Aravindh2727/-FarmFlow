@@ -60,7 +60,7 @@ const Login = () => {
     setGoogleLoading(true);
     try {
       const googleUser = await signInWithGoogle();
-      await loginWithGoogle(googleUser);
+      await loginWithGoogle(googleUser, false);
       navigate('/dashboard');
     } catch (err) {
       console.error("Google sign in failed:", err);
@@ -68,6 +68,8 @@ const Login = () => {
         setError('Google sign-in popup was closed.');
       } else if (err.code === 'auth/cancelled-popup-request') {
         // Ignored
+      } else if (err.response?.data?.detail) {
+        setError(err.response.data.detail);
       } else {
         setError(err.message || 'Google sign-in failed. Please try again.');
       }

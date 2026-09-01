@@ -56,6 +56,13 @@ async def google_auth(google_in: GoogleAuthRequest):
         user = await database.db.users.find_one({"email": google_in.email})
         now = datetime.now(timezone.utc)
         
+        # If user is logging in but no account exists, do not auto-register
+        if google_in.mode == "login" and not user:
+            raise HTTPException(
+                status_code=404,
+                detail="No account found with this Google email. Please create an account first."
+            )
+        
         if not user:
             user_name = google_in.name if google_in.name else google_in.email.split("@")[0]
             user_doc = {
@@ -91,6 +98,8 @@ async def google_auth(google_in: GoogleAuthRequest):
             "access_token": access_token,
             "token_type": "bearer",
         }
+    except HTTPException:
+        raise
     except Exception as e:
         import traceback
         traceback.print_exc()

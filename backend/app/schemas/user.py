@@ -60,6 +60,7 @@ class GoogleAuthRequest(BaseModel):
     name: Optional[str] = ""
     google_id: Optional[str] = None
     photo_url: Optional[str] = None
+    mode: Optional[str] = "login" # "login" or "signup"
 
 class Token(BaseModel):
     access_token: str

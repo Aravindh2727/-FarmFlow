@@ -71,12 +71,13 @@ export const AuthProvider = ({ children }) => {
     return userRes.data;
   };
 
-  const loginWithGoogle = async (googleUser) => {
+  const loginWithGoogle = async (googleUser, isSignUp = false) => {
     const res = await api.post('/auth/google', {
       email: googleUser.email,
       name: googleUser.displayName || (googleUser.email ? googleUser.email.split('@')[0] : 'Farmer'),
       google_id: googleUser.uid,
-      photo_url: googleUser.photoURL || null
+      photo_url: googleUser.photoURL || null,
+      mode: isSignUp ? 'signup' : 'login'
     });
 
     const data = res.data;

@@ -81,7 +81,7 @@ const Register = () => {
     setGoogleLoading(true);
     try {
       const googleUser = await signInWithGoogle();
-      await loginWithGoogle(googleUser);
+      await loginWithGoogle(googleUser, true);
       navigate('/dashboard');
     } catch (err) {
       console.error("Google sign up failed:", err);
@@ -89,6 +89,8 @@ const Register = () => {
         setError('Google sign-up popup was closed.');
       } else if (err.code === 'auth/cancelled-popup-request') {
         // Ignored
+      } else if (err.response?.data?.detail) {
+        setError(err.response.data.detail);
       } else {
         setError(err.message || 'Google sign-up failed. Please try again.');
       }
