@@ -1,7 +1,11 @@
 import axios from 'axios';
 
+let rawBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+rawBaseUrl = rawBaseUrl.trim().replace(/\/+$/, '');
+const baseURL = rawBaseUrl.endsWith('/api') ? rawBaseUrl : `${rawBaseUrl}/api`;
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+  baseURL,
 });
 
 api.interceptors.request.use(
@@ -25,7 +29,7 @@ api.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       const originalRequest = error.config;
       // Do not trigger global unauthorized for login requests
-      if (originalRequest.url !== '/auth/login') {
+      if (originalRequest.url !== '/auth/login' && originalRequest.url !== '/auth/google') {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.dispatchEvent(new Event('auth:unauthorized'));
