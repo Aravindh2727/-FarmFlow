@@ -7,11 +7,13 @@ _db = None
 def get_db():
     global client, _db
     if _db is None:
-        client = AsyncIOMotorClient(settings.MONGODB_URL)
+        mongo_url = str(settings.MONGODB_URL).strip().replace("\r", "").replace("\n", "").strip('"\'')
+        db_name = str(settings.DATABASE_NAME).strip().replace("\r", "").replace("\n", "").strip('"\'') or "farmflow"
+        client = AsyncIOMotorClient(mongo_url)
         try:
-            _db = client.get_default_database(default=settings.DATABASE_NAME)
+            _db = client.get_default_database(default=db_name)
         except Exception:
-            _db = client[settings.DATABASE_NAME]
+            _db = client[db_name]
     return _db
 
 class DatabaseProxy:
