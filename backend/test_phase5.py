@@ -9,7 +9,7 @@ def print_step(msg):
 
 def run_tests():
     print("="*50)
-    print("FARMFLOW PHASE 5 LIVESTOCK TESTS")
+    print("AGRIFLOW PHASE 5 LIVESTOCK TESTS")
     print("="*50)
     
     unique_suffix = int(time.time())
@@ -131,7 +131,7 @@ def run_tests():
     assert del_farm.status_code == 400, "Farm deleted despite having livestock"
     print("   Farm safe delete passed (blocked)")
     
-    print_step("All Phase 5 Livestock tests passed! ✅")
+    print_step("All Phase 5 Livestock tests passed! [PASS]")
 
 if __name__ == "__main__":
     run_tests()

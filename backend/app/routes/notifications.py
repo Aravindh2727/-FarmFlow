@@ -19,7 +19,7 @@ async def get_notifications(
     limit: int = 50,
     current_user: dict = Depends(get_current_user)
 ):
-    user_id = current_user["_id"]
+    user_id = str(current_user["_id"])
     
     # Sync first to ensure any new notifications are created
     await sync_notifications(database.db, user_id)
@@ -33,7 +33,7 @@ async def get_notifications(
 async def get_unread_count(
     current_user: dict = Depends(get_current_user)
 ):
-    user_id = current_user["_id"]
+    user_id = str(current_user["_id"])
     
     # Optionally sync here too, but maybe avoid it to keep polling extremely lightweight
     # We will sync on the main notification fetch instead
@@ -46,7 +46,7 @@ async def mark_as_read(
     id: str,
     current_user: dict = Depends(get_current_user)
 ):
-    user_id = current_user["_id"]
+    user_id = str(current_user["_id"])
     
     if not ObjectId.is_valid(id):
         raise HTTPException(status_code=400, detail="Invalid Notification ID")
@@ -69,7 +69,7 @@ async def mark_as_read(
 async def mark_all_as_read(
     current_user: dict = Depends(get_current_user)
 ):
-    user_id = current_user["_id"]
+    user_id = str(current_user["_id"])
     
     await database.db.notifications.update_many(
         {"user_id": user_id, "is_read": False},
@@ -83,7 +83,7 @@ async def delete_notification(
     id: str,
     current_user: dict = Depends(get_current_user)
 ):
-    user_id = current_user["_id"]
+    user_id = str(current_user["_id"])
     
     if not ObjectId.is_valid(id):
         raise HTTPException(status_code=400, detail="Invalid Notification ID")

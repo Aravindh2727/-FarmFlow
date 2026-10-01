@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { LayoutDashboard, Brain, ArrowRight, FileText, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -10,6 +10,10 @@ import LivestockAnalytics from '../components/dashboard/LivestockAnalytics';
 import RecentActivity from '../components/dashboard/RecentActivity';
 
 const Dashboard = () => {
+    useEffect(() => {
+        document.title = "AgriFlow AI | Farm Dashboard";
+    }, []);
+
   const { user } = useContext(AuthContext);
   
   const [filters, setFilters] = useState({

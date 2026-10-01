@@ -15,6 +15,10 @@ import {
 import api from '../utils/api';
 
 const Reports = () => {
+    useEffect(() => {
+        document.title = "AgriFlow AI | Farm Reports & Analytics";
+    }, []);
+
   const [farms, setFarms] = useState([]);
   const [selectedFarm, setSelectedFarm] = useState('');
   const [reportType, setReportType] = useState('financial'); // 'financial', 'farm'

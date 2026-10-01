@@ -21,7 +21,7 @@ def create_access_token(subject: Union[str, Any], expires_delta: Optional[timede
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=expire_minutes)
     
-    secret_key = settings.SECRET_KEY or "farmflow-jwt-super-secret-key-2025"
+    secret_key = settings.SECRET_KEY
     algorithm = settings.ALGORITHM or "HS256"
     
     to_encode = {"exp": expire, "sub": str(subject)}

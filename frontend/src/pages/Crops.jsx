@@ -4,6 +4,10 @@ import { Sprout, Search, Filter } from 'lucide-react';
 import api from '../api';
 
 const Crops = () => {
+    useEffect(() => {
+        document.title = "AgriFlow AI | Crop Management";
+    }, []);
+
   const [crops, setCrops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');

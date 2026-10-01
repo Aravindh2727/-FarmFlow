@@ -20,12 +20,17 @@ async def sync_notifications(db: AsyncIOMotorDatabase, user_id: str):
         try:
             # Parse crop harvest date (ISO format string usually stored in MongoDB from frontend)
             # Assuming ISO format "YYYY-MM-DD" or similar
-            harvest_date_str = crop.get("expected_harvest_date", "")
-            if harvest_date_str:
-                if 'T' in harvest_date_str:
-                    harvest_date = datetime.fromisoformat(harvest_date_str.replace("Z", "+00:00"))
+            harvest_date_val = crop.get("expected_harvest_date")
+            if harvest_date_val:
+                if isinstance(harvest_date_val, datetime):
+                    harvest_date = harvest_date_val if harvest_date_val.tzinfo else harvest_date_val.replace(tzinfo=UTC)
+                elif isinstance(harvest_date_val, str):
+                    if 'T' in harvest_date_val:
+                        harvest_date = datetime.fromisoformat(harvest_date_val.replace("Z", "+00:00"))
+                    else:
+                        harvest_date = datetime.strptime(harvest_date_val.split('T')[0], "%Y-%m-%d").replace(tzinfo=UTC)
                 else:
-                    harvest_date = datetime.strptime(harvest_date_str.split('T')[0], "%Y-%m-%d").replace(tzinfo=UTC)
+                    continue
                 
                 # If harvest is within 5 days and in the future
                 if now <= harvest_date <= five_days_from_now:
@@ -62,12 +67,17 @@ async def sync_notifications(db: AsyncIOMotorDatabase, user_id: str):
         "next_due_date": {"$exists": True, "$ne": None}
     }):
         try:
-            due_date_str = vax.get("next_due_date", "")
-            if due_date_str:
-                if 'T' in due_date_str:
-                    due_date = datetime.fromisoformat(due_date_str.replace("Z", "+00:00"))
+            due_date_val = vax.get("next_due_date")
+            if due_date_val:
+                if isinstance(due_date_val, datetime):
+                    due_date = due_date_val if due_date_val.tzinfo else due_date_val.replace(tzinfo=UTC)
+                elif isinstance(due_date_val, str):
+                    if 'T' in due_date_val:
+                        due_date = datetime.fromisoformat(due_date_val.replace("Z", "+00:00"))
+                    else:
+                        due_date = datetime.strptime(due_date_val.split('T')[0], "%Y-%m-%d").replace(tzinfo=UTC)
                 else:
-                    due_date = datetime.strptime(due_date_str.split('T')[0], "%Y-%m-%d").replace(tzinfo=UTC)
+                    continue
                 
                 if now <= due_date <= five_days_from_now:
                     days_left = (due_date - now).days

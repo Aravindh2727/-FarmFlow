@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /farms
+Disallow: /fields
+Disallow: /crops
+Disallow: /livestock
+Disallow: /income
+Disallow: /expenses
+Disallow: /reports
+Disallow: /ai-insights
+Disallow: /settings
+
+Sitemap: https://farmflow-frontend.onrender.com/sitemap.xml

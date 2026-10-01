@@ -1,7 +1,14 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.core.database import connect_to_mongo, close_mongo_connection
+import logging
+import traceback
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 from app.routes.auth import router as auth_router
 from app.routes.farms import router as farms_router
 from app.routes.fields import router as fields_router
@@ -13,6 +20,7 @@ from app.routes.finance import router as finance_router
 from app.routes.livestock import router as livestock_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.ai import router as ai_router
+from app.routes.ai_assistant import router as ai_assistant_router
 from app.routes.notifications import router as notifications_router
 from app.routes.reports import router as reports_router
 from app.ml.predictors import ml_predictor
@@ -21,10 +29,21 @@ from app.ml.predictors import ml_predictor
 async def lifespan(app: FastAPI):
     await connect_to_mongo()
     ml_predictor.load_models()
+    from app.core.config import settings
+    from app.services.ai_providers.factory import get_ai_provider
+    try:
+        provider = get_ai_provider()
+        health = await provider.check_health()
+        ollama_avail = health.get("available", False)
+    except Exception:
+        ollama_avail = False
+    logger.info(f"AI_PROVIDER: {settings.AI_PROVIDER}")
+    logger.info(f"OLLAMA_AVAILABLE: {ollama_avail}")
+    logger.info(f"OLLAMA_MODEL: {settings.OLLAMA_MODEL}")
     yield
     await close_mongo_connection()
 
-app = FastAPI(title="FarmFlow API", lifespan=lifespan)
+app = FastAPI(title="AgriFlow AI API", description="API for intelligent farm management, agricultural analytics, AI insights and farm operations.", lifespan=lifespan)
 
 # Configure CORS
 app.add_middleware(
@@ -56,16 +75,9 @@ app.include_router(finance_router, prefix="/api/finance", tags=["finance"])
 app.include_router(livestock_router, prefix="/api/livestock", tags=["livestock"])
 app.include_router(dashboard_router, prefix="/api/dashboard", tags=["dashboard"])
 app.include_router(ai_router, prefix="/api/ai", tags=["ai"])
+app.include_router(ai_assistant_router, prefix="/api/ai", tags=["ai_assistant"])
 app.include_router(notifications_router)
 app.include_router(reports_router)
-
-from fastapi import Request
-from fastapi.responses import JSONResponse
-import traceback
-import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

@@ -9,7 +9,7 @@ def print_step(msg):
 
 def run_tests():
     print("==================================================")
-    print("FARMFLOW PHASE 7 AI/ML TESTS")
+    print("AGRIFLOW PHASE 7 AI/ML TESTS")
     print("==================================================")
 
     # --- TEST 0: Health and Status ---

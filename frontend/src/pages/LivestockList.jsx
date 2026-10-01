@@ -5,6 +5,10 @@ import { Dog, Plus, Loader2, AlertCircle, Edit, Trash2, Eye } from 'lucide-react
 import LivestockForm from '../components/LivestockForm';
 
 const LivestockList = () => {
+    useEffect(() => {
+        document.title = "AgriFlow AI | Livestock Management";
+    }, []);
+
   const [livestock, setLivestock] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');

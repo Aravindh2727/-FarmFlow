@@ -18,7 +18,7 @@ MODELS_DIR = os.path.join(os.path.dirname(__file__), "..", "app", "ml", "saved_m
 os.makedirs(MODELS_DIR, exist_ok=True)
 
 print("========================================")
-print(" FARMFLOW - ML MODEL TRAINING SCRIPT")
+print(" AGRIFLOW - ML MODEL TRAINING SCRIPT")
 print("========================================")
 
 # ==========================================

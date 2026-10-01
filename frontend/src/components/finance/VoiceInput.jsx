@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Mic, MicOff, AlertCircle } from 'lucide-react';
 
-const VoiceInput = ({ onTextUpdate, currentText = '' }) => {
+const VoiceInput = ({ onTextUpdate, onTranscription, currentText = '' }) => {
     const [isListening, setIsListening] = useState(false);
     const [error, setError] = useState(null);
     const [supported, setSupported] = useState(true);
@@ -38,12 +38,11 @@ const VoiceInput = ({ onTextUpdate, currentText = '' }) => {
                 }
             }
             
-            // Only update on final transcript or show interim?
-            // Let's just update the main text on final to avoid jitter, 
-            // but we can append to the existing text
             if (finalTranscript) {
                 const separator = currentText.length > 0 && !currentText.endsWith(' ') ? ' ' : '';
-                onTextUpdate(currentText + separator + finalTranscript);
+                const updated = currentText + separator + finalTranscript;
+                if (onTextUpdate) onTextUpdate(updated);
+                if (onTranscription) onTranscription(updated);
             }
         };
 

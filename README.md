@@ -1,6 +1,8 @@
-# FarmFlow - Modern Agricultural Management System
+# AgriFlow AI
+## Intelligent Farm Management and Predictive Analytics System
+AgriFlow is a comprehensive, production-ready full-stack application designed to modernize farm management. It integrates core agricultural record-keeping with advanced Machine Learning predictions, OCR receipt scanning, Voice Inputs, and dynamic PDF/CSV reporting.
 
-FarmFlow is a comprehensive, production-ready full-stack application designed to modernize farm management. It integrates core agricultural record-keeping with advanced Machine Learning predictions, OCR receipt scanning, Voice Inputs, and dynamic PDF/CSV reporting.
+**Important Disclaimer**: Machine learning predictions in the current academic implementation are based on synthetic training patterns and should not be treated as guaranteed real-world predictions.
 
 ---
 
@@ -11,6 +13,9 @@ FarmFlow is a comprehensive, production-ready full-stack application designed to
 - **Livestock Management:** Manage livestock inventory, feed schedules, medical treatments, vaccination records with due date tracking, and daily production (milk/eggs).
 - **Real-Time Analytics Dashboard:** Aggregated farm metrics, expense breakdown by category, yield distributions, and recent activities powered by MongoDB aggregation pipelines and `Recharts`.
 - **AI & Machine Learning Engine:**
+  - Conversational AI Assistant (powered by Gemini) for intelligent farm insights, data summarization, and agriculture advice.
+  - Context-aware intent detection connected securely to AgriFlow records.
+  - Weather integration providing instant location-based forecasting.
   - Crop Yield Prediction based on farm size and crop type.
   - Net Profit Forecasting with historical trend extrapolation.
   - Expense Anomaly Detection identifying unusual or inflated expense entries.

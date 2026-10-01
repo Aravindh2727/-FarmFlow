@@ -108,14 +108,14 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-slate-50 to-emerald-100/40 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 shadow-xl shadow-emerald-600/25 text-white mb-4 transform hover:scale-105 transition-transform duration-200">
-          <Leaf className="h-9 w-9" />
+        <div className="inline-flex items-center justify-center w-32 h-32 mb-2 transform hover:scale-105 transition-transform duration-200">
+          <img src="/agriflow-bg-logo.png" alt="AgriFlow Logo" className="w-full h-full object-contain drop-shadow-xl" />
         </div>
         <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
           Create your account
         </h1>
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          Start managing your farms and agriculture with FarmFlow
+          Start managing your farms and agriculture with AgriFlow
         </p>
       </div>
 

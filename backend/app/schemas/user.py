@@ -15,9 +15,11 @@ class PyObjectId(ObjectId):
         return ObjectId(v)
 
     @classmethod
-    def __get_pydantic_json_schema__(cls, field_schema):
-        field_schema.update(type="string")
-        return field_schema
+    def __get_pydantic_json_schema__(cls, core_schema, handler):
+        # ObjectId uses a legacy plain validator which has no JSON-schema form.
+        # Describe its wire representation directly instead of asking Pydantic to
+        # render that validator.
+        return {"type": "string"}
 
 class UserBase(BaseModel):
     email: EmailStr

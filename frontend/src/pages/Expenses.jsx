@@ -20,6 +20,10 @@ import ReceiptScanner from '../components/finance/ReceiptScanner';
 import OCRReview from '../components/finance/OCRReview';
 
 const Expenses = () => {
+    useEffect(() => {
+        document.title = "AgriFlow AI | Farm Expenses";
+    }, []);
+
   const [expenses, setExpenses] = useState([]);
   const [farms, setFarms] = useState([]);
   const [fields, setFields] = useState([]);

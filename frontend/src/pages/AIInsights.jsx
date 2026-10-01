@@ -8,8 +8,13 @@ import {
     Loader,
     CheckCircle
 } from 'lucide-react';
+import AIChat from '../components/ai/AIChat';
 
 const AIInsights = () => {
+    useEffect(() => {
+        document.title = "AgriFlow AI | AI Farming Insights & Predictions";
+    }, []);
+
     const [status, setStatus] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -109,7 +114,7 @@ const AIInsights = () => {
             <div className="mb-8">
                 <h1 className="flex items-center text-3xl font-bold text-gray-900 dark:text-white">
                     <Brain className="mr-3 h-8 w-8 text-purple-600" />
-                    AI Insights & Predictions
+                    AgriFlow AI Insights & Predictions
                 </h1>
                 <p className="mt-2 text-gray-600 dark:text-gray-400">
                     Use machine learning to forecast your farm's performance. 
@@ -121,6 +126,8 @@ const AIInsights = () => {
                     Note: Predictions are estimates based on historical synthetic patterns. Actual results may vary.
                 </p>
             </div>
+
+            <AIChat />
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 

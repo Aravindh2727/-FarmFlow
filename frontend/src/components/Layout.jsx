@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { LogOut, User as UserIcon, LayoutDashboard, Tractor, Menu, Bell, Sprout, Pickaxe, Receipt, Banknote, Dog, Brain, FileText } from 'lucide-react';
+import { LogOut, User as UserIcon, LayoutDashboard, Tractor, Menu, Bell, Sprout, Pickaxe, Receipt, Banknote, Dog, Brain, FileText, X } from 'lucide-react';
 import NotificationCenter from './notifications/NotificationCenter';
 import api from '../utils/api';
 
@@ -42,21 +42,59 @@ const Layout = () => {
     }
   };
 
+  // Close sidebar automatically on resize to desktop, and handle body scroll lock for mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024 && isSidebarOpen) {
+        setIsSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isSidebarOpen]);
+
+  useEffect(() => {
+    if (window.innerWidth < 1024 && isSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isSidebarOpen]);
+
+  const handleNavigation = () => {
+    if (window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Mobile sidebar backdrop */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 z-20 bg-gray-900 bg-opacity-50 lg:hidden"
+          className="fixed inset-0 z-20 bg-black/20 lg:hidden backdrop-blur-sm transition-opacity"
           onClick={() => setIsSidebarOpen(false)}
         ></div>
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-30 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 lg:translate-x-0 lg:static lg:inset-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="flex items-center justify-center h-16 border-b border-gray-200">
-          <Tractor className="h-8 w-8 text-green-600 mr-2" />
-          <span className="text-2xl font-bold text-green-700">FarmFlow</span>
+      <div className={`fixed inset-y-0 left-0 z-30 w-72 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 shrink-0 flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="flex items-center justify-center h-16 border-b border-gray-200 shrink-0 relative">
+          <img src="/agriflow-bg-logo.png" alt="AgriFlow Logo" className="h-8 w-8 object-contain mr-2 drop-shadow-sm" />
+          <div className="text-2xl font-extrabold tracking-tight flex items-center">
+            <span className="text-green-800">AgriFlow</span>
+            <span className="text-green-500 ml-1">AI</span>
+          </div>
+          <button 
+            onClick={() => setIsSidebarOpen(false)}
+            className="lg:hidden absolute right-4 p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500"
+            aria-label="Close navigation"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
         
         <div className="overflow-y-auto overflow-x-hidden flex-grow">
@@ -70,6 +108,7 @@ const Layout = () => {
               <li key={item.name}>
                 <Link
                   to={item.href}
+                  onClick={handleNavigation}
                   className={`relative flex flex-row items-center h-11 focus:outline-none hover:bg-green-50 text-gray-600 hover:text-green-800 border-l-4 ${
                     location.pathname.startsWith(item.href) ? 'border-green-500 bg-green-50 text-green-800' : 'border-transparent'
                   } pr-6`}
@@ -133,7 +172,7 @@ const Layout = () => {
 
         {/* Page Content */}
         <main className="flex-1 relative overflow-y-auto focus:outline-none bg-gray-50">
-          <div className="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <Outlet />
           </div>
         </main>

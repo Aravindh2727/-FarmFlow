@@ -14,6 +14,10 @@ import {
 import FinancialOverview from '../components/FinancialOverview';
 
 const Income = () => {
+    useEffect(() => {
+        document.title = "AgriFlow AI | Farm Income";
+    }, []);
+
   const [incomes, setIncomes] = useState([]);
   const [farms, setFarms] = useState([]);
   const [fields, setFields] = useState([]);
