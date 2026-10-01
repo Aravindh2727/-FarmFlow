@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Leaf, Loader2, AlertCircle, ArrowRight, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { signInWithGoogle } from '../firebase';
+import Footer from '../components/Footer';
 
 const GoogleIcon = () => (
   <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
@@ -106,21 +107,21 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-slate-50 to-emerald-100/40 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex items-center justify-center w-32 h-32 mb-2 transform hover:scale-105 transition-transform duration-200">
-          <img src="/agriflow-bg-logo.png" alt="AgriFlow Logo" className="w-full h-full object-contain drop-shadow-xl" />
+    <div className="min-h-[100dvh] bg-gradient-to-br from-emerald-50 via-slate-50 to-emerald-100/40 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 flex flex-col py-6 sm:py-12 px-4 sm:px-6 lg:px-8 transition-colors">
+      <div className="w-full max-w-md mx-auto my-auto shrink-0">
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 mb-3 sm:mb-4 transform hover:scale-105 transition-transform duration-200">
+            <img src="/agriflow-bg-logo.png" alt="AgriFlow Logo" className="w-full h-full object-contain drop-shadow-xl" />
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight px-2">
+            Create your account
+          </h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed px-4 sm:px-0">
+            Start managing your farms and agriculture with AgriFlow
+          </p>
         </div>
-        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-          Create your account
-        </h1>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          Start managing your farms and agriculture with AgriFlow
-        </p>
-      </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white dark:bg-gray-800/95 py-8 px-6 sm:px-10 shadow-2xl shadow-gray-200/60 dark:shadow-black/40 rounded-3xl border border-gray-100 dark:border-gray-700/80 backdrop-blur-xs">
+        <div className="bg-white dark:bg-gray-800/95 py-7 sm:py-8 px-5 sm:px-10 shadow-2xl shadow-gray-200/60 dark:shadow-black/40 rounded-3xl border border-gray-100 dark:border-gray-700/80 backdrop-blur-xs">
           {error && (
             <div className="mb-6 rounded-2xl bg-rose-50 dark:bg-rose-950/50 p-4 border border-rose-200 dark:border-rose-800/80 text-rose-800 dark:text-rose-200 flex items-start gap-3 text-sm animate-in fade-in duration-300">
               <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-600 dark:text-rose-400 mt-0.5" />
@@ -298,6 +299,9 @@ const Register = () => {
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

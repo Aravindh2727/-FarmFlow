@@ -1,8 +1,9 @@
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { LogOut, User as UserIcon, LayoutDashboard, Tractor, Menu, Bell, Sprout, Pickaxe, Receipt, Banknote, Dog, Brain, FileText, X } from 'lucide-react';
 import NotificationCenter from './notifications/NotificationCenter';
+import Footer from './Footer';
 import api from '../utils/api';
 
 const Layout = () => {
@@ -24,6 +25,14 @@ const Layout = () => {
 
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const mainContentRef = useRef(null);
+
+  // Reset scroll position on route change
+  useEffect(() => {
+    if (mainContentRef.current) {
+      mainContentRef.current.scrollTop = 0;
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     if (user) {
@@ -71,7 +80,7 @@ const Layout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="h-[100dvh] overflow-hidden bg-gray-50 flex">
       {/* Mobile sidebar backdrop */}
       {isSidebarOpen && (
         <div 
@@ -171,10 +180,11 @@ const Layout = () => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 relative overflow-y-auto focus:outline-none bg-gray-50">
-          <div className="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <main ref={mainContentRef} className="flex-1 relative overflow-y-auto focus:outline-none bg-gray-50 flex flex-col">
+          <div className="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-1">
             <Outlet />
           </div>
+          <Footer />
         </main>
       </div>
       <NotificationCenter isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
