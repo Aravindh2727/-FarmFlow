@@ -259,6 +259,11 @@ class AIAssistantService:
         weather_err_msg = None
 
         # Build context securely based on authenticated user_id
+        crops_data = None
+        finance_data = None
+        livestock_data = None
+        farm_data = None
+
         if intent == "weather" or "weather" in message.lower() or "வானிலை" in message:
             weather_info, location_note = await self.get_farm_weather(user_id, message)
             if weather_info:
@@ -285,8 +290,8 @@ class AIAssistantService:
             context_sections.append("USER FINANCIAL CONTEXT:\n" + json.dumps(finance_data, indent=2))
 
         elif intent == "crop_data":
-            crop_data = await self.get_crop_data(user_id)
-            context_sections.append("USER CROPS CONTEXT:\n" + json.dumps(crop_data, indent=2))
+            crops_data = await self.get_crop_data(user_id)
+            context_sections.append("USER CROPS CONTEXT:\n" + json.dumps(crops_data, indent=2))
 
         elif intent == "livestock_data":
             livestock_data = await self.get_livestock_data(user_id)
@@ -299,16 +304,16 @@ class AIAssistantService:
         else:
             # General agricultural question or overview
             farm_data = await self.get_farm_data(user_id)
-            crop_data = await self.get_crop_data(user_id)
+            crops_data = await self.get_crop_data(user_id)
             context_sections.append("USER GENERAL FARM OVERVIEW:\n" + json.dumps({
                 "farms": [f["name"] for f in farm_data.get("farms", [])],
-                "active_crops": [c["name"] for c in crop_data.get("growing_crops", [])]
+                "active_crops": [c["name"] for c in crops_data.get("growing_crops", [])]
             }))
 
         context_text = "\n\n".join(context_sections)
 
         system_prompt = (
-            "You are AgriFlow AI Assistant, an expert, friendly, and practical agricultural companion.\n"
+            "You are FarmFlow AI Assistant, an expert, friendly, and practical farming companion.\n"
             "You provide intelligent agricultural insights, farm guidance, and data summarization.\n\n"
             "MANDATORY INSTRUCTIONS:\n"
             "1. Base answers on the User Farm Data Context provided below whenever relevant.\n"
@@ -324,6 +329,65 @@ class AIAssistantService:
 
         provider = get_ai_provider()
 
+        def _generate_deterministic_fallback() -> str:
+            msg_lower = message.lower()
+            if intent == "farm_data" or ("farm" in msg_lower and "have" in msg_lower):
+                if not farm_data:
+                    return "You currently have no farms recorded."
+                farms = farm_data.get("farms", [])
+                total = len(farms)
+                if total == 0:
+                    return "You currently have no farms recorded."
+                ans = f"You have {total} farm(s):\n\n"
+                for i, f in enumerate(farms, 1):
+                    ans += f"{i}. {f.get('name', 'Unnamed')} — {f.get('total_area')} {f.get('area_unit', 'acres')}\n"
+                ans += "\nYou can open the Farms section to view their fields and crops."
+                return ans
+            
+            if intent == "crop_data" or ("crop" in msg_lower and "have" in msg_lower):
+                if not crops_data:
+                    return "You currently have no crops recorded."
+                total = crops_data.get("total_crops", 0)
+                if total == 0:
+                    return "You currently have no crops recorded."
+                ans = f"You have {total} crop(s) in total.\n"
+                growing = crops_data.get("growing_crops", [])
+                if growing:
+                    ans += "\nCurrently growing:\n"
+                    for c in growing:
+                        ans += f"- {c.get('name')} ({c.get('area')} acres)\n"
+                return ans
+
+            if intent == "finance":
+                if not finance_data:
+                    return "I don't have access to your financial records right now."
+                if "profit" in msg_lower:
+                    profit = finance_data.get("net_profit", 0)
+                    return f"Your current net profit is ${profit:,.2f}.\n(Total Income: ${finance_data.get('total_income', 0):,.2f}, Total Expenses: ${finance_data.get('total_expenses', 0):,.2f})"
+                if "spend" in msg_lower or "spent" in msg_lower or "expense" in msg_lower:
+                    exp = finance_data.get("expenses_this_month", 0)
+                    return f"You have spent ${exp:,.2f} this month. Your total expenses overall are ${finance_data.get('total_expenses', 0):,.2f}."
+                if "income" in msg_lower:
+                    return f"Your total income is ${finance_data.get('total_income', 0):,.2f}."
+            
+            if intent == "weather" and weather_info:
+                curr = weather_info.get("current", {})
+                return f"Current weather in {weather_info.get('location')}:\nTemperature: {curr.get('temperature_2m')}°C\nCondition: {curr.get('condition', 'N/A')}\nHumidity: {curr.get('relative_humidity_2m')}%\nPrecipitation: {curr.get('precipitation')} mm"
+            
+            if intent == "livestock_data":
+                if not livestock_data:
+                    return "You currently have no livestock recorded."
+                total = livestock_data.get("total_animals", 0)
+                if total == 0:
+                    return "You currently have no livestock recorded."
+                ans = f"You have {total} animal(s).\n"
+                summary = livestock_data.get("species_summary", {})
+                for k, v in summary.items():
+                    ans += f"- {k}: {v}\n"
+                return ans
+
+            return None # Return None if no deterministic fallback is suitable
+
         try:
             answer = await provider.generate_response(
                 system_prompt=system_prompt,
@@ -337,6 +401,15 @@ class AIAssistantService:
             }
         except RuntimeError as re:
             err_text = str(re)
+            fallback = _generate_deterministic_fallback()
+            if fallback:
+                return {
+                    "answer": fallback,
+                    "intent": intent,
+                    "weather": weather_info,
+                    "source": "farmflow_data"
+                }
+
             # Handle specific friendly error messages
             if "Local AI service is not running" in err_text:
                 safe_msg = "Local AI service is not running. Please start Ollama and try again."
@@ -356,8 +429,16 @@ class AIAssistantService:
             }
         except Exception as e:
             logger.exception("Error generating AI response: %s", str(e))
+            fallback = _generate_deterministic_fallback()
+            if fallback:
+                return {
+                    "answer": fallback,
+                    "intent": intent,
+                    "weather": weather_info,
+                    "source": "farmflow_data"
+                }
             return {
-                "answer": "AI service is temporarily unavailable. Please try again shortly.",
+                "answer": "The AI service is temporarily unavailable. Please try again shortly.",
                 "intent": intent,
                 "weather": weather_info
             }

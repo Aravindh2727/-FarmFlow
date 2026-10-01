@@ -1,6 +1,6 @@
 # AgriFlow AI
 ## Intelligent Farm Management and Predictive Analytics System
-AgriFlow is a comprehensive, production-ready full-stack application designed to modernize farm management. It integrates core agricultural record-keeping with advanced Machine Learning predictions, OCR receipt scanning, Voice Inputs, and dynamic PDF/CSV reporting.
+AgriFlow is a comprehensive, production-ready full-stack application designed to modernize farm management. It integrates core agricultural record-keeping with advanced Machine Learning predictions, Voice Inputs, and dynamic PDF/CSV reporting.
 
 **Important Disclaimer**: Machine learning predictions in the current academic implementation are based on synthetic training patterns and should not be treated as guaranteed real-world predictions.
 
@@ -21,7 +21,7 @@ AgriFlow is a comprehensive, production-ready full-stack application designed to
   - Expense Anomaly Detection identifying unusual or inflated expense entries.
   - Smart Expense Category Recommendation based on natural language descriptions.
 - **Modern Accessibility & Input Tools:**
-  - Browser-native WebAssembly OCR (`tesseract.js`) for scanning receipts and bills directly into expense entries.
+
   - Web Speech API integration for hands-free voice logging.
 - **Automated Alerts & PDF/CSV Reports:**
   - Dynamic in-app notification center for automated harvest and vaccination reminders.

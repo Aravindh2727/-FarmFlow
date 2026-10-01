@@ -16,9 +16,6 @@ import FinancialOverview from '../components/FinancialOverview';
 import AnomalyAlert from '../components/finance/AnomalyAlert';
 import CategorySuggester from '../components/finance/CategorySuggester';
 import VoiceInput from '../components/finance/VoiceInput';
-import ReceiptScanner from '../components/finance/ReceiptScanner';
-import OCRReview from '../components/finance/OCRReview';
-
 const Expenses = () => {
     useEffect(() => {
         document.title = "AgriFlow AI | Farm Expenses";
@@ -48,8 +45,6 @@ const Expenses = () => {
   // AI States
   const [anomalyResult, setAnomalyResult] = useState(null);
   const [anomalySaving, setAnomalySaving] = useState(false);
-  const [ocrMode, setOcrMode] = useState(false);
-  const [ocrReviewData, setOcrReviewData] = useState(null);
 
   const initialFormState = {
     farm_id: '',
@@ -126,8 +121,6 @@ const Expenses = () => {
 
   const handleOpenAddModal = () => {
     setEditingExpense(null);
-    setOcrMode(false);
-    setOcrReviewData(null);
     setAnomalyResult(null);
     setFormData({
       ...initialFormState,
@@ -141,8 +134,6 @@ const Expenses = () => {
 
   const handleOpenEditModal = async (expense) => {
     setEditingExpense(expense);
-    setOcrMode(false);
-    setOcrReviewData(null);
     setAnomalyResult(null);
 
     const expenseDate = expense.expense_date ? expense.expense_date.split('T')[0] : new Date().toISOString().split('T')[0];
@@ -192,28 +183,6 @@ const Expenses = () => {
     }
   };
 
-  const handleOcrConfirm = (extracted) => {
-    let parsedDate = formData.expense_date;
-    if (extracted.date) {
-      const parts = extracted.date.split(/[/\-.]/);
-      if (parts.length === 3) {
-        let d = parts[0], m = parts[1], y = parts[2];
-        if (d.length === 4) { y = parts[0]; d = parts[2]; }
-        const iso = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
-        if (!isNaN(Date.parse(iso))) parsedDate = iso;
-      }
-    }
-
-    setFormData({
-      ...formData,
-      amount: parseFloat(extracted.amount) || formData.amount,
-      vendor: extracted.vendor || formData.vendor,
-      description: extracted.description || formData.description,
-      expense_date: parsedDate
-    });
-    setOcrReviewData(null);
-    setOcrMode(false);
-  };
 
   const handleSubmit = async (e, forceSave = false) => {
     if (e) e.preventDefault();
@@ -326,13 +295,7 @@ const Expenses = () => {
             <option value="">All Farms</option>
             {farms.map(f => <option key={f._id} value={f._id}>{f.name}</option>)}
           </select>
-          <button 
-            onClick={() => { setOcrMode(true); setIsModalOpen(true); }}
-            className="bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 px-4 py-2.5 rounded-xl flex items-center space-x-2 transition-all shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-700 cursor-pointer text-sm font-medium"
-          >
-            <Camera size={18} />
-            <span>Scan Bill</span>
-          </button>
+
           <button 
             onClick={handleOpenAddModal}
             className="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2.5 rounded-xl flex items-center space-x-2 transition-all shadow-sm cursor-pointer text-sm font-medium"
@@ -473,15 +436,13 @@ const Expenses = () => {
             <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center sticky top-0 bg-white dark:bg-gray-800 z-10">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <Receipt className="text-rose-600 w-5 h-5" />
-                <span>{ocrMode ? 'Scan Receipt' : ocrReviewData ? 'Review Data' : editingExpense ? 'Edit Expense' : 'Record Expense'}</span>
+                <span>{editingExpense ? 'Edit Expense' : 'Record Expense'}</span>
               </h2>
               <button 
                 onClick={() => {
                   setIsModalOpen(false); 
                   setEditingExpense(null);
                   setAnomalyResult(null); 
-                  setOcrMode(false); 
-                  setOcrReviewData(null);
                 }} 
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-2xl leading-none p-1 cursor-pointer"
               >
@@ -490,18 +451,6 @@ const Expenses = () => {
             </div>
             
             <div className="p-6">
-              {ocrMode && !ocrReviewData ? (
-                <ReceiptScanner 
-                  onScanComplete={(data) => setOcrReviewData(data)} 
-                  onCancel={() => {setIsModalOpen(false); setOcrMode(false);}} 
-                />
-              ) : ocrReviewData ? (
-                <OCRReview 
-                  initialData={ocrReviewData}
-                  onConfirm={handleOcrConfirm}
-                  onCancel={() => {setOcrReviewData(null); setOcrMode(false);}}
-                />
-              ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <AnomalyAlert 
                     result={anomalyResult} 
@@ -672,7 +621,6 @@ const Expenses = () => {
                     </button>
                   </div>
                 </form>
-              )}
             </div>
           </div>
         </div>
