@@ -323,16 +323,16 @@ const Reports = () => {
                         <div className="space-y-4">
                           <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-xl shadow-xs border border-gray-100 dark:border-gray-700">
                             <span className="text-gray-600 dark:text-gray-400 text-sm">Total Income:</span>
-                            <span className="font-bold text-lg text-emerald-600">₹{preview.total_income?.toLocaleString()}</span>
+                            <span className="font-bold text-lg text-emerald-600">₹{preview.total_income?.toLocaleString('en-IN')}</span>
                           </div>
                           <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-xl shadow-xs border border-gray-100 dark:border-gray-700">
                             <span className="text-gray-600 dark:text-gray-400 text-sm">Total Expenses:</span>
-                            <span className="font-bold text-lg text-rose-600">₹{preview.total_expenses?.toLocaleString()}</span>
+                            <span className="font-bold text-lg text-rose-600">₹{preview.total_expenses?.toLocaleString('en-IN')}</span>
                           </div>
                           <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-xl shadow-xs border-2 border-emerald-100 dark:border-emerald-900/40">
                             <span className="text-gray-900 dark:text-white font-semibold text-sm">Net Profit:</span>
                             <span className={`font-bold text-lg ${preview.net_profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                              ₹{preview.net_profit?.toLocaleString()}
+                              ₹{preview.net_profit?.toLocaleString('en-IN')}
                             </span>
                           </div>
                         </div>

@@ -283,7 +283,7 @@ const AIInsights = () => {
                             <h3 className="text-sm font-semibold text-blue-800 dark:text-blue-300 uppercase tracking-wider">Estimated Net Profit</h3>
                             <div className="mt-2 flex items-baseline">
                                 <span className="text-4xl font-extrabold text-blue-600 dark:text-blue-400">
-                                    ₹ {profitResult.estimated_profit.toLocaleString()}
+                                    ₹{profitResult.estimated_profit.toLocaleString('en-IN')}
                                 </span>
                             </div>
                             <div className="mt-3 flex items-center text-sm text-blue-700 dark:text-blue-400">

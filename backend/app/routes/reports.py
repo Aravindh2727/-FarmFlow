@@ -188,7 +188,7 @@ async def financial_csv(
     
     output = StringIO()
     writer = csv.writer(output)
-    writer.writerow(["Type", "Date", "Category/Source", "Amount", "Description"])
+    writer.writerow(["Type", "Date", "Category/Source", "Amount (INR)", "Description"])
     
     for i in incomes:
         d_str = format_date_str(i.get("income_date"))

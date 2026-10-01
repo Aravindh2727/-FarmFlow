@@ -130,7 +130,7 @@ class AIAssistantService:
     async def get_finance_data(self, user_id: str) -> Dict[str, Any]:
         """Fetch finances and compute aggregations strictly for the authenticated user."""
         expenses = await db.expenses.find({"user_id": user_id}).to_list(length=300)
-        incomes = await db.incomes.find({"user_id": user_id}).to_list(length=300)
+        incomes = await db.income.find({"user_id": user_id}).to_list(length=300)
         farms = await db.farms.find({"user_id": user_id}).to_list(length=100)
         farm_names = {str(f["_id"]): f.get("name", "Unnamed Farm") for f in farms}
 
@@ -313,7 +313,7 @@ class AIAssistantService:
         context_text = "\n\n".join(context_sections)
 
         system_prompt = (
-            "You are FarmFlow AI Assistant, an expert, friendly, and practical farming companion.\n"
+            "You are AgriFlow AI Assistant, an expert, friendly, and practical farming companion.\n"
             "You provide intelligent agricultural insights, farm guidance, and data summarization.\n\n"
             "MANDATORY INSTRUCTIONS:\n"
             "1. Base answers on the User Farm Data Context provided below whenever relevant.\n"
@@ -323,7 +323,8 @@ class AIAssistantService:
             "5. If weather data could not be retrieved, clearly state: 'I couldn't retrieve current weather data right now.'\n"
             "6. Support English and Tamil (தமிழ்). If the user asks in Tamil, reply in helpful and natural Tamil. If in English, reply in English.\n"
             "7. Format responses neatly with bullet points or markdown tables where helpful.\n"
-            "8. Never expose internal MongoDB IDs (ObjectIds) or raw JSON syntax.\n\n"
+            "8. Never expose internal MongoDB IDs (ObjectIds) or raw JSON syntax.\n"
+            "9. Always format monetary values in Indian Rupee (₹), never use $ or USD.\n\n"
             f"=== USER FARM DATA CONTEXT ===\n{context_text}"
         )
 
@@ -331,7 +332,7 @@ class AIAssistantService:
 
         def _generate_deterministic_fallback() -> str:
             msg_lower = message.lower()
-            if intent == "farm_data" or ("farm" in msg_lower and "have" in msg_lower):
+            if intent == "farm_data":
                 if not farm_data:
                     return "You currently have no farms recorded."
                 farms = farm_data.get("farms", [])
@@ -344,7 +345,7 @@ class AIAssistantService:
                 ans += "\nYou can open the Farms section to view their fields and crops."
                 return ans
             
-            if intent == "crop_data" or ("crop" in msg_lower and "have" in msg_lower):
+            if intent == "crop_data":
                 if not crops_data:
                     return "You currently have no crops recorded."
                 total = crops_data.get("total_crops", 0)
@@ -361,14 +362,16 @@ class AIAssistantService:
             if intent == "finance":
                 if not finance_data:
                     return "I don't have access to your financial records right now."
-                if "profit" in msg_lower:
+                if "profit" in msg_lower or "லாபம்" in msg_lower:
                     profit = finance_data.get("net_profit", 0)
-                    return f"Your current net profit is ${profit:,.2f}.\n(Total Income: ${finance_data.get('total_income', 0):,.2f}, Total Expenses: ${finance_data.get('total_expenses', 0):,.2f})"
-                if "spend" in msg_lower or "spent" in msg_lower or "expense" in msg_lower:
+                    return f"Your current net profit is ₹{profit:,.2f}.\n(Total Income: ₹{finance_data.get('total_income', 0):,.2f}, Total Expenses: ₹{finance_data.get('total_expenses', 0):,.2f})"
+                if "spend" in msg_lower or "spent" in msg_lower or "expense" in msg_lower or "cost" in msg_lower or "செலவு" in msg_lower:
                     exp = finance_data.get("expenses_this_month", 0)
-                    return f"You have spent ${exp:,.2f} this month. Your total expenses overall are ${finance_data.get('total_expenses', 0):,.2f}."
-                if "income" in msg_lower:
-                    return f"Your total income is ${finance_data.get('total_income', 0):,.2f}."
+                    return f"You have spent ₹{exp:,.2f} this month. Your total expenses overall are ₹{finance_data.get('total_expenses', 0):,.2f}."
+                if "income" in msg_lower or "revenue" in msg_lower or "வருமானம்" in msg_lower:
+                    return f"Your total income is ₹{finance_data.get('total_income', 0):,.2f}."
+                profit = finance_data.get("net_profit", 0)
+                return f"Financial summary:\n- Total Income: ₹{finance_data.get('total_income', 0):,.2f}\n- Total Expenses: ₹{finance_data.get('total_expenses', 0):,.2f}\n- Net Profit: ₹{profit:,.2f}"
             
             if intent == "weather" and weather_info:
                 curr = weather_info.get("current", {})

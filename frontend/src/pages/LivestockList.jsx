@@ -211,7 +211,7 @@ const LivestockList = () => {
                     <p><span className="font-medium text-gray-700">Farm:</span> {farm?.name || 'Unknown'}</p>
                     <p><span className="font-medium text-gray-700">Gender:</span> {animal.gender}</p>
                     <p><span className="font-medium text-gray-700">Purchased:</span> {animal.purchase_date ? new Date(animal.purchase_date).toLocaleDateString() : 'N/A'}</p>
-                    <p><span className="font-medium text-gray-700">Cost:</span> ₹{(animal.purchase_cost != null ? Number(animal.purchase_cost) : 0).toFixed(2)}</p>
+                    <p><span className="font-medium text-gray-700">Cost:</span> ₹{(animal.purchase_cost != null ? Number(animal.purchase_cost) : 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   </div>
                 </div>
                 <div className="bg-gray-50 px-5 py-3 border-t border-gray-200 flex justify-end space-x-2">

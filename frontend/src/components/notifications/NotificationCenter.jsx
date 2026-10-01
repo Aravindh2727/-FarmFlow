@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Check, Trash2, Calendar, AlertTriangle, Leaf, DollarSign, Activity } from 'lucide-react';
+import { Bell, Check, Trash2, Calendar, AlertTriangle, Leaf, IndianRupee, Activity } from 'lucide-react';
 import api from '../../utils/api';
 
 const NotificationCenter = ({ isOpen, onClose }) => {
@@ -55,7 +55,7 @@ const NotificationCenter = ({ isOpen, onClose }) => {
         if (priority === 'high') return <AlertTriangle className="w-5 h-5 text-rose-500" />;
         switch (type) {
             case 'crop_reminder': return <Leaf className="w-5 h-5 text-emerald-500" />;
-            case 'finance_alert': return <DollarSign className="w-5 h-5 text-amber-500" />;
+            case 'finance_alert': return <IndianRupee className="w-5 h-5 text-amber-500" />;
             case 'livestock_alert': return <Activity className="w-5 h-5 text-blue-500" />;
             default: return <Bell className="w-5 h-5 text-gray-500" />;
         }

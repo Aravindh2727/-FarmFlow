@@ -147,7 +147,7 @@ const LivestockDetails = () => {
                 </div>
                 <div className="sm:col-span-1">
                   <dt className="text-sm font-medium text-gray-500">Purchase Cost</dt>
-                  <dd className="mt-1 text-sm text-gray-900">₹{(animal.purchase_cost != null ? Number(animal.purchase_cost) : 0).toFixed(2)}</dd>
+                  <dd className="mt-1 text-sm text-gray-900">₹{(animal.purchase_cost != null ? Number(animal.purchase_cost) : 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</dd>
                 </div>
                 <div className="sm:col-span-2">
                   <dt className="text-sm font-medium text-gray-500">Source</dt>
@@ -205,10 +205,10 @@ const LivestockDetails = () => {
                       {activeTab === 'Production' && (
                         <><th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Income</th></>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Income (₹)</th></>
                       )}
                       {activeTab !== 'Production' && (
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost (₹)</th>
                       )}
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -218,8 +218,8 @@ const LivestockDetails = () => {
                       const recordDate = r.feed_date || r.treatment_date || r.vaccination_date || r.production_date;
                       const formattedDate = recordDate ? new Date(recordDate).toLocaleDateString() : 'N/A';
                       const formattedNextDue = r.next_due_date ? new Date(r.next_due_date).toLocaleDateString() : 'N/A';
-                      const costValue = r.cost != null ? Number(r.cost).toFixed(2) : '0.00';
-                      const incomeValue = r.income != null ? Number(r.income).toFixed(2) : '0.00';
+                      const costValue = r.cost != null ? Number(r.cost).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00';
+                      const incomeValue = r.income != null ? Number(r.income).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00';
 
                       return (
                         <tr key={r._id} className="hover:bg-gray-50">
