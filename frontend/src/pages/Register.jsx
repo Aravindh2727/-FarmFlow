@@ -44,22 +44,23 @@ const Register = () => {
   const redirectProcessed = useRef(false);
 
   useEffect(() => {
+    let isMounted = true;
+
     const handleRedirect = async () => {
       if (redirectProcessed.current) return;
       redirectProcessed.current = true;
       
       try {
-        setGoogleLoading(true);
         const googleUser = await checkGoogleRedirectResult();
-        if (googleUser) {
+        if (googleUser && isMounted) {
+          setGoogleLoading(true);
           await registerWithGoogle(googleUser);
           navigate('/login', {
             state: { message: 'Google account registered successfully! Please sign in to continue.' }
           });
-        } else {
-          setGoogleLoading(false);
         }
       } catch (err) {
+        if (!isMounted) return;
         console.error("Redirect sign up failed:", err);
         if (err.code === 'auth/unauthorized-domain') {
           setError('Domain is not authorized for Google Sign-In.');
@@ -68,10 +69,17 @@ const Register = () => {
         } else {
           setError(err.message || 'Google sign-up failed. Please try again.');
         }
-        setGoogleLoading(false);
+      } finally {
+        if (isMounted) {
+          setGoogleLoading(false);
+        }
       }
     };
     handleRedirect();
+
+    return () => {
+      isMounted = false;
+    };
   }, [registerWithGoogle, navigate]);
 
   const handleChange = (e) => {
@@ -117,37 +125,17 @@ const Register = () => {
     setError('');
     setGoogleLoading(true);
     try {
-      const googleUser = await signInWithGoogle();
-      await registerWithGoogle(googleUser);
-      navigate('/login', {
-        state: { message: 'Google account registered successfully! Please sign in to continue.' }
-      });
+      await signInWithGoogleRedirect();
     } catch (err) {
       console.error("Google sign up failed:", err);
-      if (err.code === 'auth/popup-blocked') {
-        try {
-          await signInWithGoogleRedirect();
-          return;
-        } catch (redirectErr) {
-          console.error("Redirect fallback failed:", redirectErr);
-          setError('Google sign-up failed to redirect.');
-          setGoogleLoading(false);
-        }
-      } else if (err.code === 'auth/popup-closed-by-user') {
-        setError('Google sign-up popup was closed.');
-        setGoogleLoading(false);
-      } else if (err.code === 'auth/cancelled-popup-request') {
-        setGoogleLoading(false);
-      } else if (err.code === 'auth/unauthorized-domain') {
+      if (err.code === 'auth/unauthorized-domain') {
         setError('Domain is not authorized for Google Sign-In.');
-        setGoogleLoading(false);
       } else if (err.response?.data?.detail) {
         setError(err.response.data.detail);
-        setGoogleLoading(false);
       } else {
         setError(err.message || 'Google sign-up failed. Please try again.');
-        setGoogleLoading(false);
       }
+      setGoogleLoading(false);
     }
   };
 

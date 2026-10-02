@@ -30,18 +30,41 @@ if (typeof window !== "undefined") {
   }).catch(() => {});
 }
 
-export const signInWithGoogle = async () => {
-  const result = await signInWithPopup(auth, googleProvider);
-  return result.user;
-};
+// Singleton state to ensure getRedirectResult is handled exactly once per navigation/mount
+let redirectResultPromise = null;
+let redirectResultHandled = false;
 
 export const signInWithGoogleRedirect = async () => {
+  redirectResultPromise = null;
+  redirectResultHandled = false;
   await signInWithRedirect(auth, googleProvider);
 };
 
 export const checkGoogleRedirectResult = async () => {
-  const result = await getRedirectResult(auth);
-  return result ? result.user : null;
+  if (redirectResultHandled) {
+    return null;
+  }
+  if (!redirectResultPromise) {
+    redirectResultPromise = getRedirectResult(auth)
+      .then((result) => {
+        redirectResultHandled = true;
+        return result ? result.user : null;
+      })
+      .catch((error) => {
+        redirectResultHandled = true;
+        throw error;
+      });
+  }
+  return redirectResultPromise;
+};
+
+// Reliable redirect flow is the default Google sign-in to eliminate COOP window.closed warnings and popup blocker issues
+export const signInWithGoogle = signInWithGoogleRedirect;
+
+// Optional popup flow with proper error handling if ever needed
+export const signInWithGooglePopup = async () => {
+  const result = await signInWithPopup(auth, googleProvider);
+  return result.user;
 };
 
 export { app, auth, googleProvider, analytics };
