@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -33,6 +33,15 @@ if (typeof window !== "undefined") {
 export const signInWithGoogle = async () => {
   const result = await signInWithPopup(auth, googleProvider);
   return result.user;
+};
+
+export const signInWithGoogleRedirect = async () => {
+  await signInWithRedirect(auth, googleProvider);
+};
+
+export const checkGoogleRedirectResult = async () => {
+  const result = await getRedirectResult(auth);
+  return result ? result.user : null;
 };
 
 export { app, auth, googleProvider, analytics };
