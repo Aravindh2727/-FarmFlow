@@ -10,6 +10,12 @@ const Layout = () => {
   const { user, logout } = useContext(AuthContext);
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 1024;
+    }
+    return true;
+  });
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -54,7 +60,7 @@ const Layout = () => {
   // Close sidebar automatically on resize to desktop, and handle body scroll lock for mobile
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 1024 && isSidebarOpen) {
+      if (window.innerWidth >= 768 && isSidebarOpen) {
         setIsSidebarOpen(false);
       }
     };
@@ -63,7 +69,7 @@ const Layout = () => {
   }, [isSidebarOpen]);
 
   useEffect(() => {
-    if (window.innerWidth < 1024 && isSidebarOpen) {
+    if (window.innerWidth < 768 && isSidebarOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -74,7 +80,7 @@ const Layout = () => {
   }, [isSidebarOpen]);
 
   const handleNavigation = () => {
-    if (window.innerWidth < 1024) {
+    if (window.innerWidth < 768) {
       setIsSidebarOpen(false);
     }
   };
@@ -84,33 +90,35 @@ const Layout = () => {
       {/* Mobile sidebar backdrop */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 z-20 bg-black/20 lg:hidden backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 z-20 bg-black/20 md:hidden backdrop-blur-sm transition-opacity"
           onClick={() => setIsSidebarOpen(false)}
         ></div>
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-30 w-72 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 shrink-0 flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="flex items-center justify-center h-16 border-b border-gray-200 shrink-0 relative">
-          <img src="/agriflow-bg-logo.png" alt="AgriFlow Logo" className="h-8 w-8 object-contain mr-2 drop-shadow-sm" />
-          <div className="text-2xl font-extrabold tracking-tight flex items-center">
+      <div className={`fixed inset-y-0 left-0 z-30 bg-white border-r border-gray-200 transform transition-all duration-200 ease-in-out md:translate-x-0 md:static md:inset-0 shrink-0 flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} w-72 ${isExpanded ? 'md:w-72' : 'md:w-[76px]'}`}>
+        <div className="flex items-center justify-center h-16 border-b border-gray-200 shrink-0 relative overflow-hidden">
+          <img src="/agriflow-bg-logo.png" alt="AgriFlow Logo" className={`h-8 w-8 object-contain drop-shadow-sm transition-all duration-200 shrink-0 mr-2 ${!isExpanded ? 'md:mr-0' : ''}`} />
+          <div className={`text-2xl font-extrabold tracking-tight flex items-center transition-all duration-200 w-auto opacity-100 ${!isExpanded ? 'md:w-0 md:opacity-0 md:overflow-hidden' : ''}`}>
             <span className="text-green-800">AgriFlow</span>
             <span className="text-green-500 ml-1">AI</span>
           </div>
           <button 
             onClick={() => setIsSidebarOpen(false)}
-            className="lg:hidden absolute right-4 p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500"
+            className="md:hidden absolute right-4 p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500"
             aria-label="Close navigation"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
         
-        <div className="overflow-y-auto overflow-x-hidden flex-grow">
+        <div className="overflow-y-auto overflow-x-hidden flex-grow custom-scrollbar">
           <ul className="flex flex-col py-4 space-y-1">
             <li className="px-5">
               <div className="flex flex-row items-center h-8">
-                <div className="text-sm font-light tracking-wide text-gray-500">Menu</div>
+                <div className={`text-sm font-light tracking-wide text-gray-500 transition-opacity duration-200 opacity-100 ${!isExpanded ? 'md:opacity-0' : ''}`}>
+                  Menu
+                </div>
               </div>
             </li>
             {navigation.map((item) => (
@@ -120,12 +128,16 @@ const Layout = () => {
                   onClick={handleNavigation}
                   className={`relative flex flex-row items-center h-11 focus:outline-none hover:bg-green-50 text-gray-600 hover:text-green-800 border-l-4 ${
                     location.pathname.startsWith(item.href) ? 'border-green-500 bg-green-50 text-green-800' : 'border-transparent'
-                  } pr-6`}
+                  } group pr-2`}
+                  title={!isExpanded ? item.name : undefined}
+                  aria-label={item.name}
                 >
-                  <span className="inline-flex justify-center items-center ml-4">
+                  <span className={`inline-flex justify-center items-center transition-all duration-200 shrink-0 ml-4 w-5 ${!isExpanded ? 'md:ml-0 md:w-full' : ''}`}>
                     <item.icon className="h-5 w-5" />
                   </span>
-                  <span className="ml-2 text-sm tracking-wide truncate">{item.name}</span>
+                  <span className={`text-sm tracking-wide truncate transition-all duration-200 ml-2 opacity-100 w-auto ${!isExpanded ? 'md:w-0 md:opacity-0 md:overflow-hidden md:ml-0' : ''}`}>
+                    {item.name}
+                  </span>
                 </Link>
               </li>
             ))}
@@ -134,15 +146,24 @@ const Layout = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-50 transition-all duration-200">
         {/* Top Navbar */}
         <header className="bg-white shadow-sm border-b border-gray-200 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center lg:hidden">
+          <div className="flex items-center">
+            {/* Mobile toggle */}
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500"
+              className="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500"
+              aria-label="Open sidebar"
             >
-              <span className="sr-only">Open sidebar</span>
+              <Menu className="h-6 w-6" />
+            </button>
+            {/* Desktop toggle */}
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="hidden md:block text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500 -ml-2 p-2 rounded-md transition-colors"
+              aria-label={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
+            >
               <Menu className="h-6 w-6" />
             </button>
           </div>
