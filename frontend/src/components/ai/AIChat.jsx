@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import api from '../../utils/api';
-import { Send, Trash2, Plus, MessageSquare, Loader, CloudRain, Edit2 } from 'lucide-react';
+import { Send, Trash2, Plus, MessageSquare, Loader, CloudRain, Edit2, Menu, X } from 'lucide-react';
 import VoiceInput from '../finance/VoiceInput';
 import ReactMarkdown from 'react-markdown';
 
@@ -37,6 +37,7 @@ const AIChat = () => {
     const [loading, setLoading] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [editTitle, setEditTitle] = useState("");
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const chatContainerRef = useRef(null);
 
     useEffect(() => {
@@ -199,12 +200,12 @@ const AIChat = () => {
     const renderWeatherSource = (weather) => {
         if (!weather || !weather.current) return null;
         return (
-            <div className="mt-4 mb-2 p-4 bg-blue-50 border border-blue-100 rounded-lg dark:bg-blue-900/20 dark:border-blue-800 text-sm">
+            <div className="mt-4 mb-2 p-3 sm:p-4 bg-blue-50 border border-blue-100 rounded-lg dark:bg-blue-900/20 dark:border-blue-800 text-sm w-full">
                 <div className="flex items-center text-blue-800 dark:text-blue-300 font-semibold mb-2">
-                    <CloudRain className="w-4 h-4 mr-2" />
-                    Weather — {weather.location}
+                    <CloudRain className="w-4 h-4 mr-2 shrink-0" />
+                    <span className="truncate">Weather — {weather.location}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-4 text-blue-900 dark:text-blue-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-blue-900 dark:text-blue-100">
                     <div>
                         <span className="opacity-75">Temperature:</span> {weather.current.temperature_2m}°C
                     </div>
@@ -220,15 +221,18 @@ const AIChat = () => {
     };
 
     return (
-        <div className="flex flex-col md:flex-row h-[85vh] min-h-[600px] border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800 shadow-xl overflow-hidden mb-8">
+        <div className="flex flex-row h-[calc(100dvh-180px)] sm:h-[85vh] min-h-[500px] sm:min-h-[600px] w-full border-y sm:border border-gray-200 dark:border-gray-700 sm:rounded-2xl bg-white dark:bg-gray-800 sm:shadow-xl overflow-hidden sm:mb-8 relative">
             {/* Sidebar */}
-            <div className="w-full md:w-64 h-48 md:h-auto shrink-0 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex flex-col">
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className={`${isHistoryOpen ? 'flex' : 'hidden'} md:flex absolute md:relative z-30 w-full md:w-64 h-full md:h-auto shrink-0 border-r border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md md:backdrop-blur-none flex-col top-0 left-0`}>
+                <div className="p-3 md:p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                     <button 
-                        onClick={createConversation}
-                        className="w-full flex items-center justify-center p-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
+                        onClick={() => { createConversation(); setIsHistoryOpen(false); }}
+                        className="w-fit md:w-full flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-full md:rounded-lg transition mx-auto md:mx-0"
                     >
-                        <Plus className="w-4 h-4 mr-2" /> New Chat
+                        <Plus className="w-4 h-4 mr-2 shrink-0" /> New Chat
+                    </button>
+                    <button onClick={() => setIsHistoryOpen(false)} className="md:hidden p-2 text-gray-500 hover:text-gray-700 bg-gray-100 rounded-lg">
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
                 <div className="flex-1 overflow-y-auto p-2">
@@ -258,17 +262,17 @@ const AIChat = () => {
                                     />
                                 </div>
                             ) : (
-                                <div className="flex items-center overflow-hidden">
-                                    <MessageSquare className="w-4 h-4 mr-2 flex-shrink-0" />
+                                <div className="flex items-center overflow-hidden flex-1 min-w-0">
+                                    <MessageSquare className="w-4 h-4 mr-2 shrink-0" />
                                     <span className="truncate text-sm font-medium" title={conv.title}>{conv.title}</span>
                                 </div>
                             )}
                             
                             {!editingId && (
-                                <div className="flex items-center ml-2 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="flex items-center shrink-0 ml-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                    <button 
                                         onClick={(e) => { e.stopPropagation(); setEditTitle(conv.title); setEditingId(conv.id); }}
-                                        className="text-gray-400 hover:text-blue-500 transition"
+                                        className="p-2 text-gray-400 hover:text-blue-500 transition"
                                         title="Rename conversation"
                                         aria-label="Rename conversation"
                                    >
@@ -276,7 +280,7 @@ const AIChat = () => {
                                    </button>
                                    <button 
                                         onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id); }}
-                                        className="text-gray-400 hover:text-red-500 transition"
+                                        className="p-2 text-gray-400 hover:text-red-500 transition"
                                         title="Delete conversation"
                                         aria-label="Delete conversation"
                                    >
@@ -290,13 +294,18 @@ const AIChat = () => {
             </div>
 
             {/* Main Chat Area */}
-            <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-gray-800">
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-col justify-center bg-gray-50/50 dark:bg-gray-800/50">
-                    <h2 className="text-lg font-bold text-gray-800 dark:text-white">AgriFlow AI Assistant</h2>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Your intelligent agricultural companion</p>
+            <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-gray-800 relative">
+                <div className="p-3 sm:p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm sticky top-0 z-10">
+                    <div>
+                        <h2 className="text-base sm:text-lg font-bold text-gray-800 dark:text-white leading-tight">AgriFlow AI Assistant</h2>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Your intelligent agricultural companion</p>
+                    </div>
+                    <button onClick={() => setIsHistoryOpen(true)} className="md:hidden p-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition">
+                        <Menu className="w-5 h-5" />
+                    </button>
                 </div>
 
-                <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-6">
+                <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 sm:p-6 w-full max-w-3xl mx-auto flex flex-col">
                     {messages.length === 0 && (
                         <div className="h-full flex flex-col items-center justify-center text-center">
                             <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
@@ -321,49 +330,64 @@ const AIChat = () => {
                     )}
 
                     {messages.map((msg, i) => (
-                        <div key={msg.id || i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`max-w-[75%] rounded-2xl p-4 ${
+                        <div key={msg.id || i} className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'} mb-4 sm:mb-6`}>
+                            {msg.role === 'assistant' && (
+                                <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0 mt-1 mr-3 shadow-sm">
+                                    <span className="text-sm">🧠</span>
+                                </div>
+                            )}
+                            <div className={`max-w-[85%] sm:max-w-[80%] break-words overflow-hidden ${
                                 msg.role === 'user' 
-                                    ? 'bg-green-600 text-white rounded-br-none' 
-                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-bl-none'
+                                    ? 'bg-green-600 text-white rounded-2xl rounded-br-none p-3 sm:p-4 shadow-sm' 
+                                    : 'text-gray-800 dark:text-gray-100 pt-1'
                             }`}>
                                 {msg.role === 'assistant' && msg.sources?.map((s, idx) => {
-                                    if (s.type === 'weather') return <div key={idx}>{renderWeatherSource(s.data)}</div>;
+                                    if (s.type === 'weather') return <div key={idx} className="w-full overflow-x-auto">{renderWeatherSource(s.data)}</div>;
                                     return null;
                                 })}
-                                <div className="prose dark:prose-invert max-w-none text-sm">
+                                <div className="prose dark:prose-invert max-w-none text-sm sm:text-base break-words overflow-x-auto">
                                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                                 </div>
                             </div>
                         </div>
                     ))}
                     {loading && (
-                        <div className="flex justify-start">
-                            <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl rounded-bl-none p-4 flex items-center">
+                        <div className="flex w-full justify-start mb-4">
+                            <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0 mt-1 mr-3 shadow-sm">
+                                <span className="text-sm">🧠</span>
+                            </div>
+                            <div className="text-gray-800 dark:text-gray-100 pt-1 flex items-center">
                                 <Loader className="w-5 h-5 animate-spin text-green-600 mr-2" />
-                                <span className="text-sm text-gray-500 dark:text-gray-400">Thinking...</span>
+                                <span className="text-sm">Thinking...</span>
                             </div>
                         </div>
                     )}
                 </div>
 
-                <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-                    <form onSubmit={sendMessage} className="flex items-center gap-2">
-                        <VoiceInput onTextUpdate={handleVoiceInput} onTranscription={handleVoiceInput} currentText={input} />
-                        <input 
-                            type="text" 
-                            className="flex-1 p-3 rounded-xl border border-gray-300 focus:border-green-500 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            placeholder="Ask AgriFlow AI..."
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                        />
-                        <button 
-                            type="submit"
-                            disabled={!input.trim() || loading}
-                            className="p-3 bg-green-600 hover:bg-green-700 text-white rounded-xl transition disabled:opacity-50"
-                        >
-                            <Send className="w-5 h-5" />
-                        </button>
+                <div 
+                    className="p-3 sm:p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 w-full sticky bottom-0 z-10"
+                    style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 12px)' }}
+                >
+                    <form onSubmit={sendMessage} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 max-w-3xl mx-auto w-full">
+                        <div className="w-full sm:w-auto shrink-0">
+                            <VoiceInput onTextUpdate={handleVoiceInput} onTranscription={handleVoiceInput} currentText={input} />
+                        </div>
+                        <div className="flex items-center gap-2 flex-1 min-w-0 w-full">
+                            <input 
+                                type="text" 
+                                className="flex-1 min-w-0 p-3 rounded-xl border border-gray-300 focus:border-green-500 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                placeholder="Ask AgriFlow AI..."
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                            />
+                            <button 
+                                type="submit"
+                                disabled={!input.trim() || loading}
+                                className="shrink-0 p-3 bg-green-600 hover:bg-green-700 text-white rounded-xl transition disabled:opacity-50 flex items-center justify-center"
+                            >
+                                <Send className="w-5 h-5" />
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>

@@ -110,26 +110,19 @@ const AIInsights = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 p-6 dark:bg-gray-900">
-            <div className="mb-8">
-                <h1 className="flex items-center text-3xl font-bold text-gray-900 dark:text-white">
-                    <Brain className="mr-3 h-8 w-8 text-purple-600" />
-                    AgriFlow AI Insights & Predictions
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full overflow-x-hidden box-border">
+            <div className="p-4 sm:p-6 pb-2 sm:pb-4">
+                <h1 className="flex items-center text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                    <Brain className="mr-3 h-7 w-7 sm:h-8 sm:w-8 text-purple-600 shrink-0" />
+                    AgriFlow AI Insights
                 </h1>
-                <p className="mt-2 text-gray-600 dark:text-gray-400">
-                    Use machine learning to forecast your farm's performance. 
-                    <span className="ml-1 inline-flex items-center text-xs font-medium text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full dark:bg-purple-900/30 dark:text-purple-400">
-                        Powered by scikit-learn
-                    </span>
-                </p>
-                <p className="mt-1 text-sm text-gray-500 italic">
-                    Note: Predictions are estimates based on historical synthetic patterns. Actual results may vary.
-                </p>
             </div>
 
-            <AIChat />
+            <div className="w-full sm:px-6">
+                <AIChat />
+            </div>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="p-4 sm:p-6 grid grid-cols-1 gap-6 lg:grid-cols-2 mt-4 sm:mt-6">
                 
                 {/* YIELD PREDICTOR */}
                 <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xl shadow-gray-200/50 dark:border-gray-800 dark:bg-gray-800 dark:shadow-none">

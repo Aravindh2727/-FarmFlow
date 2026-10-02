@@ -89,22 +89,22 @@ const VoiceInput = ({ onTextUpdate, onTranscription, currentText = '' }) => {
     }
 
     return (
-        <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex items-center bg-gray-50 dark:bg-gray-800 rounded-lg p-1 border border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+            <div className="flex items-center bg-gray-50 dark:bg-gray-800 rounded-lg p-1 border border-gray-200 dark:border-gray-700 w-full sm:w-auto">
                 <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
                     disabled={isListening}
-                    className="text-xs bg-transparent border-none focus:ring-0 text-gray-600 dark:text-gray-300 py-1 pl-2 pr-6 cursor-pointer outline-none"
+                    className="text-xs bg-transparent border-none focus:ring-0 text-gray-600 dark:text-gray-300 py-1.5 pl-2 pr-6 cursor-pointer outline-none min-w-0"
                 >
                     <option value="en-IN">English</option>
                     <option value="ta-IN">Tamil</option>
                 </select>
-                <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1 shrink-0"></div>
                 <button
                     type="button"
                     onClick={toggleListening}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex-1 sm:flex-none whitespace-nowrap ${
                         isListening 
                             ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 animate-pulse' 
                             : 'bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
