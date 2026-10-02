@@ -2,7 +2,7 @@ import { useState, useContext, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Leaf, Loader2, AlertCircle, ArrowRight, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { signInWithGoogle, signInWithGoogleRedirect, checkGoogleRedirectResult } from '../firebase';
+import { signInWithGoogle, signInWithGoogleRedirect, checkGoogleRedirectResult, clearGoogleRedirectResult } from '../firebase';
 import Footer from '../components/Footer';
 
 const GoogleIcon = () => (
@@ -39,46 +39,59 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   
-  const { register, registerWithGoogle } = useContext(AuthContext);
+  const { isAuthenticated, isLoading, register, registerWithGoogle } = useContext(AuthContext);
   const navigate = useNavigate();
-  const redirectProcessed = useRef(false);
 
+  // If already authenticated, redirect to dashboard
   useEffect(() => {
-    let isMounted = true;
+    if (!isLoading && isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
-    const handleRedirect = async () => {
-      if (redirectProcessed.current) return;
-      redirectProcessed.current = true;
-      
+  // Handle Google Redirect Result on Registration
+  useEffect(() => {
+    let active = true;
+
+    const processRedirect = async () => {
       try {
         const googleUser = await checkGoogleRedirectResult();
-        if (googleUser && isMounted) {
+        if (!active) return;
+        
+        if (googleUser) {
           setGoogleLoading(true);
           await registerWithGoogle(googleUser);
-          navigate('/login', {
-            state: { message: 'Google account registered successfully! Please sign in to continue.' }
-          });
+          clearGoogleRedirectResult();
+          if (active) {
+            navigate('/login', {
+              state: { message: 'Google account registered successfully! Please sign in to continue.' }
+            });
+          }
         }
       } catch (err) {
-        if (!isMounted) return;
+        if (!active) return;
+        clearGoogleRedirectResult();
         console.error("Redirect sign up failed:", err);
         if (err.code === 'auth/unauthorized-domain') {
           setError('Domain is not authorized for Google Sign-In.');
+        } else if (err.response?.status === 400 && err.response.data?.detail) {
+          setError(err.response.data.detail);
         } else if (err.response?.data?.detail) {
           setError(err.response.data.detail);
         } else {
           setError(err.message || 'Google sign-up failed. Please try again.');
         }
       } finally {
-        if (isMounted) {
+        if (active) {
           setGoogleLoading(false);
         }
       }
     };
-    handleRedirect();
+
+    processRedirect();
 
     return () => {
-      isMounted = false;
+      active = false;
     };
   }, [registerWithGoogle, navigate]);
 
@@ -122,6 +135,7 @@ const Register = () => {
   };
 
   const handleGoogleSignUp = async () => {
+    if (googleLoading || loading) return;
     setError('');
     setGoogleLoading(true);
     try {

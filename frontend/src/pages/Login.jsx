@@ -2,7 +2,7 @@ import { useState, useContext, useEffect, useRef } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Leaf, Loader2, AlertCircle, ArrowRight, CheckCircle2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { signInWithGoogle, signInWithGoogleRedirect, checkGoogleRedirectResult } from '../firebase';
+import { signInWithGoogle, signInWithGoogleRedirect, checkGoogleRedirectResult, clearGoogleRedirectResult } from '../firebase';
 import Footer from '../components/Footer';
 
 const GoogleIcon = () => (
@@ -35,48 +35,63 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   
-  const { login, loginWithGoogle } = useContext(AuthContext);
+  const { isAuthenticated, isLoading, login, loginWithGoogle } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const successMessage = location.state?.message;
-  const redirectProcessed = useRef(false);
 
+  // Auto-redirect if session is already active
   useEffect(() => {
-    let isMounted = true;
+    if (!isLoading && isAuthenticated) {
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate, location.state]);
 
-    const handleRedirect = async () => {
-      if (redirectProcessed.current) return;
-      redirectProcessed.current = true;
-      
+  // Handle Google Redirect Result
+  useEffect(() => {
+    let active = true;
+
+    const processRedirect = async () => {
       try {
         const googleUser = await checkGoogleRedirectResult();
-        if (googleUser && isMounted) {
+        if (!active) return;
+        
+        if (googleUser) {
           setGoogleLoading(true);
           await loginWithGoogle(googleUser);
-          navigate('/dashboard');
+          clearGoogleRedirectResult();
+          if (active) {
+            const from = location.state?.from?.pathname || '/dashboard';
+            navigate(from, { replace: true });
+          }
         }
       } catch (err) {
-        if (!isMounted) return;
+        if (!active) return;
+        clearGoogleRedirectResult();
         console.error("Redirect sign in failed:", err);
         if (err.code === 'auth/unauthorized-domain') {
           setError('Domain is not authorized for Google Sign-In.');
+        } else if (err.response?.status === 404) {
+          setError(err.response.data?.detail || 'Account not found. Please create an account first.');
         } else if (err.response?.data?.detail) {
           setError(err.response.data.detail);
         } else {
           setError(err.message || 'Google sign-in failed. Please try again.');
         }
       } finally {
-        if (isMounted) {
+        if (active) {
           setGoogleLoading(false);
         }
       }
     };
-    handleRedirect();
+
+    processRedirect();
 
     return () => {
-      isMounted = false;
+      active = false;
     };
-  }, [loginWithGoogle, navigate]);
+  }, [loginWithGoogle, navigate, location.state]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -90,7 +105,8 @@ const Login = () => {
     setLoading(true);
     try {
       await login(email, password);
-      navigate('/dashboard');
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
     } catch (err) {
       setError(err.response?.data?.detail || 'Invalid email or password.');
     } finally {
@@ -99,6 +115,7 @@ const Login = () => {
   };
 
   const handleGoogleSignIn = async () => {
+    if (googleLoading || loading) return;
     setError('');
     setGoogleLoading(true);
     try {

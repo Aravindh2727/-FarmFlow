@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useRef } from 'react';
 import api from '../api';
 
 export const AuthContext = createContext();
@@ -8,6 +8,8 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token') || null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const googleLoginPromiseRef = useRef(null);
+  const googleRegisterPromiseRef = useRef(null);
 
   useEffect(() => {
     if (token) {
@@ -72,37 +74,61 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginWithGoogle = async (googleUser) => {
-    const res = await api.post('/auth/google', {
-      email: googleUser.email,
-      name: googleUser.displayName || (googleUser.email ? googleUser.email.split('@')[0] : 'Farmer'),
-      google_id: googleUser.uid,
-      photo_url: googleUser.photoURL || null,
-      mode: 'login'
-    });
+    if (googleLoginPromiseRef.current) {
+      return googleLoginPromiseRef.current;
+    }
 
-    const data = res.data;
-    setToken(data.access_token);
-    localStorage.setItem('token', data.access_token);
+    googleLoginPromiseRef.current = (async () => {
+      try {
+        const res = await api.post('/auth/google', {
+          email: googleUser.email,
+          name: googleUser.displayName || (googleUser.email ? googleUser.email.split('@')[0] : 'Farmer'),
+          google_id: googleUser.uid,
+          photo_url: googleUser.photoURL || null,
+          mode: 'login'
+        });
 
-    const userRes = await api.get('/auth/me', {
-      headers: { Authorization: `Bearer ${data.access_token}` }
-    });
+        const data = res.data;
+        setToken(data.access_token);
+        localStorage.setItem('token', data.access_token);
 
-    setUser(userRes.data);
-    setIsAuthenticated(true);
-    localStorage.setItem('user', JSON.stringify(userRes.data));
-    return userRes.data;
+        const userRes = await api.get('/auth/me', {
+          headers: { Authorization: `Bearer ${data.access_token}` }
+        });
+
+        setUser(userRes.data);
+        setIsAuthenticated(true);
+        localStorage.setItem('user', JSON.stringify(userRes.data));
+        return userRes.data;
+      } finally {
+        googleLoginPromiseRef.current = null;
+      }
+    })();
+
+    return googleLoginPromiseRef.current;
   };
 
   const registerWithGoogle = async (googleUser) => {
-    const res = await api.post('/auth/google', {
-      email: googleUser.email,
-      name: googleUser.displayName || (googleUser.email ? googleUser.email.split('@')[0] : 'Farmer'),
-      google_id: googleUser.uid,
-      photo_url: googleUser.photoURL || null,
-      mode: 'signup'
-    });
-    return res.data;
+    if (googleRegisterPromiseRef.current) {
+      return googleRegisterPromiseRef.current;
+    }
+
+    googleRegisterPromiseRef.current = (async () => {
+      try {
+        const res = await api.post('/auth/google', {
+          email: googleUser.email,
+          name: googleUser.displayName || (googleUser.email ? googleUser.email.split('@')[0] : 'Farmer'),
+          google_id: googleUser.uid,
+          photo_url: googleUser.photoURL || null,
+          mode: 'signup'
+        });
+        return res.data;
+      } finally {
+        googleRegisterPromiseRef.current = null;
+      }
+    })();
+
+    return googleRegisterPromiseRef.current;
   };
 
   const register = async (userData) => {
