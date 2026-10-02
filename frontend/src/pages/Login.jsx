@@ -2,7 +2,7 @@ import { useState, useContext, useEffect, useRef } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Leaf, Loader2, AlertCircle, ArrowRight, CheckCircle2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { signInWithGoogle, signInWithGoogleRedirect, checkGoogleRedirectResult, clearGoogleRedirectResult } from '../firebase';
+import { signInWithGooglePopup } from '../firebase';
 import Footer from '../components/Footer';
 
 const GoogleIcon = () => (
@@ -48,50 +48,6 @@ const Login = () => {
     }
   }, [isAuthenticated, isLoading, navigate, location.state]);
 
-  // Handle Google Redirect Result
-  useEffect(() => {
-    let active = true;
-
-    const processRedirect = async () => {
-      try {
-        const googleUser = await checkGoogleRedirectResult();
-        if (!active) return;
-        
-        if (googleUser) {
-          setGoogleLoading(true);
-          await loginWithGoogle(googleUser);
-          clearGoogleRedirectResult();
-          if (active) {
-            const from = location.state?.from?.pathname || '/dashboard';
-            navigate(from, { replace: true });
-          }
-        }
-      } catch (err) {
-        if (!active) return;
-        clearGoogleRedirectResult();
-        console.error("Redirect sign in failed:", err);
-        if (err.code === 'auth/unauthorized-domain') {
-          setError('Domain is not authorized for Google Sign-In.');
-        } else if (err.response?.status === 404) {
-          setError(err.response.data?.detail || 'Account not found. Please create an account first.');
-        } else if (err.response?.data?.detail) {
-          setError(err.response.data.detail);
-        } else {
-          setError(err.message || 'Google sign-in failed. Please try again.');
-        }
-      } finally {
-        if (active) {
-          setGoogleLoading(false);
-        }
-      }
-    };
-
-    processRedirect();
-
-    return () => {
-      active = false;
-    };
-  }, [loginWithGoogle, navigate, location.state]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -119,11 +75,18 @@ const Login = () => {
     setError('');
     setGoogleLoading(true);
     try {
-      await signInWithGoogleRedirect();
+      const googleUser = await signInWithGooglePopup();
+      await loginWithGoogle(googleUser);
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
     } catch (err) {
       console.error("Google sign in failed:", err);
-      if (err.code === 'auth/unauthorized-domain') {
+      if (err.code === 'auth/popup-closed-by-user') {
+        setError('Sign-in popup was closed before completing.');
+      } else if (err.code === 'auth/unauthorized-domain') {
         setError('Domain is not authorized for Google Sign-In.');
+      } else if (err.response?.status === 404) {
+        setError(err.response.data?.detail || 'Account not found. Please create an account first.');
       } else if (err.response?.data?.detail) {
         setError(err.response.data.detail);
       } else {

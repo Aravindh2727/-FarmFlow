@@ -2,7 +2,7 @@ import { useState, useContext, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Leaf, Loader2, AlertCircle, ArrowRight, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { signInWithGoogle, signInWithGoogleRedirect, checkGoogleRedirectResult, clearGoogleRedirectResult } from '../firebase';
+import { signInWithGooglePopup } from '../firebase';
 import Footer from '../components/Footer';
 
 const GoogleIcon = () => (
@@ -49,51 +49,8 @@ const Register = () => {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  // Handle Google Redirect Result on Registration
-  useEffect(() => {
-    let active = true;
 
-    const processRedirect = async () => {
-      try {
-        const googleUser = await checkGoogleRedirectResult();
-        if (!active) return;
-        
-        if (googleUser) {
-          setGoogleLoading(true);
-          await registerWithGoogle(googleUser);
-          clearGoogleRedirectResult();
-          if (active) {
-            navigate('/login', {
-              state: { message: 'Google account registered successfully! Please sign in to continue.' }
-            });
-          }
-        }
-      } catch (err) {
-        if (!active) return;
-        clearGoogleRedirectResult();
-        console.error("Redirect sign up failed:", err);
-        if (err.code === 'auth/unauthorized-domain') {
-          setError('Domain is not authorized for Google Sign-In.');
-        } else if (err.response?.status === 400 && err.response.data?.detail) {
-          setError(err.response.data.detail);
-        } else if (err.response?.data?.detail) {
-          setError(err.response.data.detail);
-        } else {
-          setError(err.message || 'Google sign-up failed. Please try again.');
-        }
-      } finally {
-        if (active) {
-          setGoogleLoading(false);
-        }
-      }
-    };
 
-    processRedirect();
-
-    return () => {
-      active = false;
-    };
-  }, [registerWithGoogle, navigate]);
 
   const handleChange = (e) => {
     setFormData({
@@ -139,11 +96,19 @@ const Register = () => {
     setError('');
     setGoogleLoading(true);
     try {
-      await signInWithGoogleRedirect();
+      const googleUser = await signInWithGooglePopup();
+      await registerWithGoogle(googleUser);
+      navigate('/login', {
+        state: { message: 'Google account registered successfully! Please sign in to continue.' }
+      });
     } catch (err) {
       console.error("Google sign up failed:", err);
-      if (err.code === 'auth/unauthorized-domain') {
+      if (err.code === 'auth/popup-closed-by-user') {
+        setError('Sign-up popup was closed before completing.');
+      } else if (err.code === 'auth/unauthorized-domain') {
         setError('Domain is not authorized for Google Sign-In.');
+      } else if (err.response?.status === 400 && err.response.data?.detail) {
+        setError(err.response.data.detail);
       } else if (err.response?.data?.detail) {
         setError(err.response.data.detail);
       } else {

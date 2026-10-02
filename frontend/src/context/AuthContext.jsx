@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useRef } from 'react';
+import { createContext, useState, useEffect, useRef, useCallback } from 'react';
 import api from '../api';
 
 export const AuthContext = createContext();
@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
     return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
   }, [token]);
 
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     const formData = new URLSearchParams();
     formData.append('username', email); // OAuth2 expects username
     formData.append('password', password);
@@ -71,9 +71,9 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(true);
     localStorage.setItem('user', JSON.stringify(userRes.data));
     return userRes.data;
-  };
+  }, []);
 
-  const loginWithGoogle = async (googleUser) => {
+  const loginWithGoogle = useCallback(async (googleUser) => {
     if (googleLoginPromiseRef.current) {
       return googleLoginPromiseRef.current;
     }
@@ -106,9 +106,9 @@ export const AuthProvider = ({ children }) => {
     })();
 
     return googleLoginPromiseRef.current;
-  };
+  }, []);
 
-  const registerWithGoogle = async (googleUser) => {
+  const registerWithGoogle = useCallback(async (googleUser) => {
     if (googleRegisterPromiseRef.current) {
       return googleRegisterPromiseRef.current;
     }
@@ -129,20 +129,24 @@ export const AuthProvider = ({ children }) => {
     })();
 
     return googleRegisterPromiseRef.current;
-  };
+  }, []);
 
-  const register = async (userData) => {
+  const register = useCallback(async (userData) => {
     const res = await api.post('/auth/register', userData);
     return res.data;
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setToken(null);
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-  };
+    // Also sign out from Firebase to prevent auto-login loops
+    import('../firebase').then(({ auth }) => {
+      auth.signOut().catch(console.error);
+    });
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, token, isAuthenticated, isLoading, login, register, loginWithGoogle, registerWithGoogle, logout }}>
