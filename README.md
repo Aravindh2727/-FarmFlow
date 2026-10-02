@@ -123,11 +123,25 @@ This repository includes a `render.yaml` blueprint for easy deployment of both B
 
 ## 🧪 Testing
 
-Run unit & integration tests from the backend directory:
-```bash
-cd backend
-pytest test_phase9.py
-```
+The repository contains standalone integration and smoke test scripts that verify API flows against an active local backend:
+
+1. Ensure the backend server is running with an active MongoDB connection:
+   ```bash
+   cd backend
+   uvicorn app.main:app --port 8000
+   ```
+2. Run the authentication flow test:
+   ```bash
+   cd backend
+   python test_auth.py
+   ```
+3. Run the farm and crop management workflow test (requires the test user from auth test):
+   ```bash
+   cd backend
+   python test_farm_management.py
+   ```
+
+> **Note:** These are live-server integration scripts that make HTTP requests against a running API instance, rather than offline unit tests.
 
 ## 🔒 Security
 
